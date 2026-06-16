@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz IMAPA 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #16213e 100%);
+    border-bottom: 1px solid #2d3748;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #90cdf4;
+    letter-spacing: 0.5px;
+  }
+  .progress-bar-wrap {
+    flex: 1;
+    margin: 0 24px;
+    background: #2d3748;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4299e1, #9f7aea);
+    border-radius: 8px;
+    transition: width 0.3s ease;
+  }
+  .progress-text {
+    font-size: 0.85rem;
+    color: #a0aec0;
+    white-space: nowrap;
+  }
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  .start-screen, .results-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .start-screen h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #90cdf4;
+    margin-bottom: 12px;
+  }
+  .start-screen p {
+    color: #a0aec0;
+    margin-bottom: 32px;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #4299e1, #9f7aea);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(66, 153, 225, 0.35);
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-secondary {
+    background: #2d3748;
+    margin-left: 12px;
+  }
+  .btn-secondary:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .question-card {
+    background: #1a1d2e;
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+  }
+  .question-card.answered { border-color: #4a5568; }
+  .question-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .q-number {
+    background: linear-gradient(135deg, #4299e1, #9f7aea);
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .q-text {
+    font-size: 0.97rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+  }
+  .multi-hint {
+    font-size: 0.75rem;
+    color: #9f7aea;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .answers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .answer-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #16213e;
+    border: 1.5px solid #2d3748;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .answer-option:hover {
+    border-color: #4299e1;
+    background: #1a2744;
+  }
+  .answer-option.selected {
+    border-color: #4299e1;
+    background: #1a2744;
+  }
+  .answer-option.correct {
+    border-color: #48bb78;
+    background: #1a2d1a;
+  }
+  .answer-option.wrong {
+    border-color: #fc8181;
+    background: #2d1a1a;
+  }
+  .answer-option.missed {
+    border-color: #f6ad55;
+    background: #2d2010;
+  }
+  .answer-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #4a5568;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-size: 12px;
+  }
+  .answer-option.selected .answer-check {
+    background: #4299e1;
+    border-color: #4299e1;
+    color: white;
+  }
+  .answer-option.correct .answer-check {
+    background: #48bb78;
+    border-color: #48bb78;
+    color: white;
+  }
+  .answer-option.wrong .answer-check {
+    background: #fc8181;
+    border-color: #fc8181;
+    color: white;
+  }
+  .answer-option.missed .answer-check {
+    background: #f6ad55;
+    border-color: #f6ad55;
+    color: white;
+  }
+  .answer-letter {
+    font-weight: 700;
+    color: #718096;
+    min-width: 16px;
+    font-size: 0.9rem;
+    margin-top: 1px;
+  }
+  .answer-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #cbd5e0;
+  }
+  .submit-area {
+    display: flex;
+    justify-content: center;
+    margin-top: 36px;
+    gap: 12px;
+  }
+  .results-screen h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    margin: 0 auto 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    font-weight: 800;
+    position: relative;
+  }
+  .score-circle .score-label {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #a0aec0;
+    margin-top: 2px;
+  }
+  .results-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    background: #1a1d2e;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 16px 24px;
+    text-align: center;
+  }
+  .stat-box .stat-val {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+  .stat-box .stat-lbl {
+    font-size: 0.78rem;
+    color: #718096;
+    margin-top: 2px;
+  }
+  .green { color: #48bb78; }
+  .red { color: #fc8181; }
+  .orange { color: #f6ad55; }
+  .blue { color: #90cdf4; }
+  .review-section {
+    margin-top: 40px;
+    text-align: left;
+  }
+  .review-section h3 {
+    font-size: 1.1rem;
+    color: #90cdf4;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .badge-correct { background: #1a3a1a; color: #48bb78; border: 1px solid #48bb78; }
+  .badge-partial { background: #3a2a10; color: #f6ad55; border: 1px solid #f6ad55; }
+  .badge-wrong { background: #3a1a1a; color: #fc8181; border: 1px solid #fc8181; }
+  .legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    font-size: 0.8rem;
+    color: #a0aec0;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header" id="appHeader" style="display:none">
+  <div class="header h1" style="font-size:1rem;font-weight:600;color:#90cdf4;">Quiz IMAPA 2026</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+  <div class="progress-text" id="progressText">0 / 25</div>
+</div>
+
+<div class="container">
+
+  <!-- START SCREEN -->
+  <div class="start-screen" id="startScreen">
+    <h2>🎓 Quiz IMAPA 2026</h2>
+    <p>Testul conține <strong>375 de grile</strong> din care sunt selectate aleatoriu <strong>25</strong> la fiecare sesiune.<br>
+    Pot exista răspunsuri multiple corecte. La final vei vedea corectitudinea fiecărui răspuns.</p>
+    <button class="btn" onclick="startQuiz()">Începe testul</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" style="display:none">
+    <div id="questionsContainer"></div>
+    <div class="submit-area">
+      <button class="btn" onclick="submitQuiz()">✓ Verifică răspunsurile</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="results-screen" id="resultsScreen" style="display:none">
+    <h2 id="resultsTitle">Rezultate</h2>
+    <div class="score-circle" id="scoreCircle">
+      <span id="scoreNum"></span>
+      <span class="score-label">din 25</span>
+    </div>
+    <div class="results-stats">
+      <div class="stat-box"><div class="stat-val green" id="statCorrect">0</div><div class="stat-lbl">Corecte</div></div>
+      <div class="stat-box"><div class="stat-val orange" id="statPartial">0</div><div class="stat-lbl">Parțial corecte</div></div>
+      <div class="stat-box"><div class="stat-val red" id="statWrong">0</div><div class="stat-lbl">Greșite / Omise</div></div>
+    </div>
+    <button class="btn" onclick="startQuiz()">🔄 Test nou (25 grile aleatorii)</button>
+    <button class="btn btn-secondary" onclick="showReview()">📋 Vezi corecturile</button>
+    <div class="review-section" id="reviewSection" style="display:none">
+      <h3>Corectarea detaliată</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#48bb78"></div> Răspuns corect selectat</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fc8181"></div> Răspuns greșit selectat</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f6ad55"></div> Răspuns corect omis</div>
+      </div>
+      <div id="reviewContainer"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// TOATE ÎNTREBĂRILE – corectate complet din documentul Word
+// ============================================================
+const ALL_QUESTIONS = [
+  { id: 1, text: "1) Care afirmație este adevărată despre BRAINSTORMING?", answers: [{ letter: "a", text: "este o tehnică generală de management;" }, { letter: "b", text: "poate participa oricine din firmă la un Brainstorming, chiar dacă nu este invitat;" }, { letter: "c", text: "tehnica este concepută astfel încât gândirea critică și negativă, obișnuită în setările de grup, să fie suspendată temporar, astfel încât ideile să poată fi exprimate liber." }], correct: ["c"] },
+  { id: 2, text: "2) Printre caracteristicile managerilor profesioniști, se numără:", answers: [{ letter: "a", text: "gândesc analitic și conceptual;" }, { letter: "b", text: "echilibrează obiectivele concurente și stabilesc prioritățile;" }, { letter: "c", text: "ambele variante sunt corecte." }], correct: ["c"] },
+  { id: 3, text: "3) Care funcție de management implică măsurarea rezultatelor, compararea rezultatelor cu așteptările și luarea de măsuri corective?", answers: [{ letter: "a", text: "planificarea;" }, { letter: "b", text: "organizarea;" }, { letter: "c", text: "controlul." }], correct: ["c"] },
+  { id: 4, text: "4) Managerul conciliator are interes mediu atât pentru producţie cât şi pentru oameni se caracterizează prin:", answers: [{ letter: "a", text: "spirit inovator, creator;" }, { letter: "b", text: "curaj în asumarea riscurilor;" }, { letter: "c", text: "abilitatea de a face față situaţiilor conflictuale." }], correct: ["a", "b", "c"] },
+  { id: 5, text: "5) Managerii eficienți sunt:", answers: [{ letter: "a", text: "organizatorul, participativul, întreprinzătorul și realistul;" }, { letter: "b", text: "participativul, oportunistul, autocratul și organizatorul;" }, { letter: "c", text: "organizatorul, delăsătorul, oportunistul și realistul." }], correct: ["a"] },
+  { id: 6, text: "6) Managerul Realist:", answers: [{ letter: "a", text: "promovează relațiile ierarhice pe bază de încredere și respect reciproc;" }, { letter: "b", text: "este preocupat de aspectele formale;" }, { letter: "c", text: "este influențabil." }], correct: ["a"] },
+  { id: 7, text: "7) Metodele și tehnicile manageriale specifice, sunt:", answers: [{ letter: "a", text: "Brainstorming;" }, { letter: "b", text: "Ședința." }, { letter: "c", text: "Brainstorming, Ședința, Tehnica Delphi și Sinectica." }], correct: ["c"] },
+  { id: 8, text: "8) Ședințele manageriale pot fi:", answers: [{ letter: "a", text: "de informare și de explorare;" }, { letter: "b", text: "doar eterogene;" }, { letter: "c", text: "de informare, decizionale, de armonizare, de explorare și eterogene." }], correct: ["c"] },
+  { id: 9, text: "9) Care dintre următoarele elemente SWOT sunt factori interni pentru o afacere?", answers: [{ letter: "a", text: "puncte tari și puncte slabe" }, { letter: "b", text: "oportunități și amenințări" }, { letter: "c", text: "puncte tari și oportunități" }], correct: ["a"] },
+  { id: 10, text: "10) Cât de des trebuie efectuată o analiză SWOT?", answers: [{ letter: "a", text: "numai atunci când trebuie abordate probleme specifice;" }, { letter: "b", text: "cel puțin o dată pe an;" }, { letter: "c", text: "numai când începi o afacere." }], correct: ["b"] },
+  { id: 11, text: "11) În ce situație, dintre cele menționate mai jos, nu este utilă analiza SWOT?", answers: [{ letter: "a", text: "pentru a construi pe punctele forte ale unei afaceri;" }, { letter: "b", text: "pentru a minimiza punctele slabe ale unei afaceri;" }, { letter: "c", text: "în scopul de a reduce oportunitățile disponibile pentru o afacere." }], correct: ["c"] },
+  { id: 12, text: "12) Etapele ședinței manageriale sunt:", answers: [{ letter: "a", text: "pregătirea, deschiderea, desfășurarea și finalizarea;" }, { letter: "b", text: "desfășurarea și finalizarea;" }, { letter: "c", text: "nici o variantă nu este corectă." }], correct: ["a"] },
+  { id: 13, text: "13) Care dintre afirmațiile de mai jos este FALSĂ, cu privire la managementul administrativ:", answers: [{ letter: "a", text: "Max Weber a fost creatorul acestui curent managerial;" }, { letter: "b", text: "principiile de bază sunt: diviziunea muncii, autoritatea, disciplina, unitatea de comandă;" }, { letter: "c", text: "managementul administrativ aparține Școlii clasice de management." }], correct: ["a"] },
+  { id: 14, text: "14) Controlul de conformitate:", answers: [{ letter: "a", text: "se referă la realizarea indicatorilor, aplicarea gestiunii economice, organizarea producţiei şi a muncii;" }, { letter: "b", text: "urmăreşte menţinerea condiţiilor care formează desfăşurarea acţiunii în conformitate cu obiectivele stabilite de manager;" }, { letter: "c", text: "se execută asupra procesului de producţie." }], correct: ["b"] },
+  { id: 15, text: "15) Care afirmație este adevărată, referitor la deciziile strategice?", answers: [{ letter: "a", text: "se referă la perioadele de până la o lună;" }, { letter: "b", text: "sunt de regulă, cuprinse în programe pe termen scurt (lunare, decadale, săptămânale, zile);" }, { letter: "c", text: "se referă la o perioadă mai îndelungată de timp (peste un an)." }], correct: ["c"] },
+  { id: 16, text: "16) Managerul EZITANT, este acel manager care:", answers: [{ letter: "a", text: "are slabe aptitudini de conducător, datorită slabei eficienţe a activităţii sale;" }, { letter: "b", text: "este deosebit de atent la realizarea sarcinilor şi la stabilirea contactelor, dar care manifestă un interes scăzut pentru rezultate;" }, { letter: "c", text: "este tipul de manager constructiv." }], correct: ["b"] },
+  { id: 17, text: "17) Managerul DELĂSĂTOR:", answers: [{ letter: "a", text: "are ca scop principal realizarea obiectivelor şi atingerea unui nivel ridicat de eficienţă;" }, { letter: "b", text: "este preocupat de armonizarea relaţiilor interumane;" }, { letter: "c", text: "ambele variante sunt false." }], correct: ["c"] },
+  { id: 18, text: "18) Ce caracteristică NU este potrivită managerului PARTICIPATIV?", answers: [{ letter: "a", text: "ignoră relaţiile ierarhice şi promovează relaţii de tip colegial;" }, { letter: "b", text: "dă instrucţiuni exagerat de detaliate personalului din subordine şi, de regulă, sub formă scrisă;" }, { letter: "c", text: "ştie să dea dispoziţii în concordanţă cu capacitatea fiecărui subordonat." }], correct: ["b"] },
+  { id: 19, text: "19) Un manager care posedă cunoștințe despre procese, echipamente și potențial problemele unei industrii ar avea ce tip de abilități manageriale?", answers: [{ letter: "a", text: "tehnice;" }, { letter: "b", text: "administrative;" }, { letter: "c", text: "interpersonale." }], correct: ["a"] },
+  { id: 20, text: "20) Capacitatea unui manager de a interacționa și de a lucra eficient cu persoane și grupuri este descriptiv pentru ce tip de abilități manageriale?", answers: [{ letter: "a", text: "tehnice;" }, { letter: "b", text: "administrative;" }, { letter: "c", text: "interpersonale." }], correct: ["c"] },
+  { id: 21, text: "21) Care lider de gândire influent este cunoscut ca \"părintele managementului științific\"?", answers: [{ letter: "a", text: "Dale Carnegie;" }, { letter: "b", text: "Frederick W. Taylor;" }, { letter: "c", text: "W. Edwards Deming." }], correct: ["b"] },
+  { id: 22, text: "22) Actul decizional are următoarele caracteristici:", answers: [{ letter: "a", text: "necesită strângere de informaţii;" }, { letter: "b", text: "se consultă și angajații pentru conturarea situaţiei decizionale;" }, { letter: "c", text: "se desfăşoară într-o perioadă foarte scurtă de timp (secunde, minute)." }], correct: ["a", "b", "c"] },
+  { id: 23, text: "23) Managerul incompetent care are interes minim pentru producţie şi oameni şi se caracterizează prin:", answers: [{ letter: "a", text: "lipsa unui management strategic;" }, { letter: "b", text: "nu se adaptează la schimbări;" }, { letter: "c", text: "încălcarea corelaţiilor obiective dintre indicatorii de producţie şi salarii." }], correct: ["b"] },
+  { id: 24, text: "24) Criteriile cuantificabile de evaluare a strategiei nu reunesc:", answers: [{ letter: "a", text: "câştigul pe acţiune;" }, { letter: "b", text: "productivitatea;" }, { letter: "c", text: "acceptabilitatea riscului asumat." }], correct: ["c"] },
+  { id: 25, text: "25) Dezavantajele utilizării tabloului de bord sunt:", answers: [{ letter: "a", text: "informaţii repetate;" }, { letter: "b", text: "volum mare de muncă și cost ridicat pentru elaborarea acestuia." }, { letter: "c", text: "toate cele de mai sus." }], correct: ["c"] },
+  { id: 26, text: "26) Tipurile de manageri din punctul de vedere al raportării la schimbare, sunt:", answers: [{ letter: "a", text: "manageri conservatori – evită schimbarea, preferă stabilitatea și metodele tradiționale;" }, { letter: "b", text: "manageri adaptivi – acceptă schimbarea atunci când este necesară și se ajustează la noile condiții;" }, { letter: "c", text: "manageri pasivi – reacționează foarte târziu la schimbare." }], correct: ["a", "b"] },
+  { id: 27, text: "27) Dintre funcțiile sistemului de asistare a deciziilor, fac parte:", answers: [{ letter: "a", text: "colectarea, stocarea și gestionarea datelor;" }, { letter: "b", text: "analiza datelor (statistică, modele, simulări);" }, { letter: "c", text: "generarea de alternative de decizie." }], correct: ["a", "b", "c"] },
+  { id: 28, text: "28) Gândirea sistemică la managerii prezentului și ai viitorului, se referă la:", answers: [{ letter: "a", text: "corelarea organizației cu mediul extern (economic, social, tehnologic);" }, { letter: "b", text: "ignorarea relațiilor cauză–efect dintre procese;" }, { letter: "c", text: "înțelegerea legăturilor și interacțiunilor dintre departamente, procese și oameni." }], correct: ["a", "c"] },
+  { id: 29, text: "29) Componentele managementului prin obiective, sunt:", answers: [{ letter: "a", text: "absența termenelor clare pentru realizarea obiectivelor;" }, { letter: "b", text: "derivarea obiectivelor pe niveluri ierarhice (de la organizație la departamente și angajați);" }, { letter: "c", text: "programe de acțiune pentru atingerea obiectivelor." }], correct: ["a", "b", "c"] },
+  { id: 30, text: "30) În funcţie de conţinutul activităţii şi atribuţiile pe care le au, managerii se clasifică în:", answers: [{ letter: "a", text: "manageri de top (de vârf);" }, { letter: "b", text: "manageri de nivel mediu;" }, { letter: "c", text: "manageri de nivel inferior (operaționali)." }], correct: ["a", "b", "c"] },
+  { id: 31, text: "31) Acțiunea corectivă are rolul de a:", answers: [{ letter: "a", text: "informa personalul referitor la cerințele legale aplicabile;" }, { letter: "b", text: "corecta un produs neconform;" }, { letter: "c", text: "Implementa o măsură adecvată în urma identificării cauzei unei neconformități, pentru a preveni reapariția acesteia." }], correct: ["b"] },
+  { id: 32, text: "32) Prin corecție se înțelege:", answers: [{ letter: "a", text: "măsura ce trebuie luată pentru a corecta produsul/ procesul neconform;" }, { letter: "b", text: "operațiunea întreprinsă în urma identificării unui pericol potențial;" }, { letter: "c", text: "măsura implementată în urma identificării cauzei unei neconformități, pentru a preveni reapariția acesteia." }], correct: ["a"] },
+  { id: 33, text: "33) Cine are responsabilitatea de a formula acțiunile corective, în urma unui audit de certificare?", answers: [{ letter: "a", text: "auditorul;" }, { letter: "b", text: "auditatul;" }, { letter: "c", text: "managementul de la cel mai înalt nivel." }], correct: ["a"] },
+  { id: 34, text: "34) Standardul care se referă la definiția calității este:", answers: [{ letter: "a", text: "ISO 9001:2015;" }, { letter: "b", text: "ISO 9000:2015;" }, { letter: "c", text: "ISO 14000:2015." }], correct: ["b"] },
+  { id: 35, text: "35) Managementul calității este:", answers: [{ letter: "a", text: "un ansamblu de activități ce vizează creşterea eficienţei activităților;" }, { letter: "b", text: "un ansamblu de activităţi coordonate pentru a orienta şi a controla o organizaţie în ceea ce priveşte calitatea;" }, { letter: "c", text: "un ansamblu de activități ce vizează îndeplinirea cerinţelor referitoare la calitate." }], correct: ["b"] },
+  { id: 36, text: "36) Controlul calității este:", answers: [{ letter: "a", text: "parte a managementului calităţii, concentrată pe îndeplinirea cerinţelor referitoare la calitate;" }, { letter: "b", text: "parte a managementului calităţii, concentrată pe furnizarea încrederii că cerinţele referitoare la calitate vor fi îndeplinite;" }, { letter: "c", text: "parte a managementului calităţii, concentrată pe creşterea abilităţii de a îndeplini cerinţele calităţii." }], correct: ["a"] },
+  { id: 37, text: "37) Asigurarea calității este:", answers: [{ letter: "a", text: "sistemul de activităţi concentrate pe furnizarea încrederii că cerinţele referitoare la calitate vor fi îndeplinite;" }, { letter: "b", text: "sistemul de activităţi ce direcţionează şi controlează organizaţia în domeniul calităţii;" }, { letter: "c", text: "sistemul de activităţi ce vizează îndeplinirea cerinţelor calităţii." }], correct: ["a"] },
+  { id: 38, text: "38) Care din următoarele expresii constituie un principiu de managementul calităţii?", answers: [{ letter: "a", text: "eficienţa economică;" }, { letter: "b", text: "avantajul concurențial;" }, { letter: "c", text: "managementul relațiilor." }], correct: ["c"] },
+  { id: 39, text: "39) Standardul SR EN ISO 9001:2015 este aplicabil pentru:", answers: [{ letter: "a", text: "organizații care efectuează proiectare;" }, { letter: "b", text: "organizații care au procese speciale;" }, { letter: "c", text: "toate tipurile de organizaţii." }], correct: ["c"] },
+  { id: 40, text: "40) Ce se înţelege prin managementul proceselor?", answers: [{ letter: "a", text: "controlul rezultatelor proceselor de producţie;" }, { letter: "b", text: "denumirea activităţii care se desfăşoară într-o întreprindere;" }, { letter: "c", text: "planificarea, organizarea, controlul şi îmbunătăţirea proceselor din organizație." }], correct: ["c"] },
+  { id: 41, text: "41) O organizație care are implementat un Sistem de Management al Calităţii este capabilă de a:", answers: [{ letter: "a", text: "furniza consecvent produse de cea mai bună calitate;" }, { letter: "b", text: "furniza consecvent produse care să satisfacă cerinţele clienţilor;" }, { letter: "c", text: "furniza consecvent produse care să satisfacă cerinţele clienţilor şi cerinţele prevederilor legale aplicabile." }], correct: ["c"] },
+  { id: 42, text: "42) Cine are dreptul de a efectua o certificare a unui Sistem de Managementul calității?", answers: [{ letter: "a", text: "orice consultant autorizat;" }, { letter: "b", text: "orice organism acreditat în acest sens;" }, { letter: "c", text: "conducerea întreprinderii, cu acordul adunării generale a acţionarilor." }], correct: ["b"] },
+  { id: 43, text: "43) Certificatul SR EN ISO 9001:2015 este valabil:", answers: [{ letter: "a", text: "5 ani;" }, { letter: "b", text: "1 an;" }, { letter: "c", text: "3 ani." }], correct: ["c"] },
+  { id: 44, text: "44) Standardul SR EN ISO 9001:2015 este:", answers: [{ letter: "a", text: "un standard metodologic pentru calitate;" }, { letter: "b", text: "un standard de cerințe pentru calitate;" }, { letter: "c", text: "un standard cu linii directoare pentru calitate." }], correct: ["b"] },
+  { id: 45, text: "45) În managementul calității este importantă:", answers: [{ letter: "a", text: "calitatea prestației percepută de client;" }, { letter: "b", text: "calitatea prestației percepută de organismele de control;" }, { letter: "c", text: "calitatea prestației percepută de organismul de certificare." }], correct: ["a"] },
+  { id: 46, text: "46) Acţiunea efectuată pentru a elimina cauzele unei neconformități detectate sau a altei situații nedorite este:", answers: [{ letter: "a", text: "corecție;" }, { letter: "b", text: "acţiune corectivă;" }, { letter: "c", text: "îmbunătățire continuă." }], correct: ["b"] },
+  { id: 47, text: "47) Creșterea gradului de conștientizare referitor la managementului calității ajută la îmbunătățirea performanțelor de calitate în cadrul companiei prin:", answers: [{ letter: "a", text: "angajații înțeleg rolurile lor și impactul pe care îl au asupra SMC;" }, { letter: "b", text: "angajații înțeleg consecințele în cazul în care nu respectă regulile SMC;" }, { letter: "c", text: "angajații devin experți în managementul calității." }], correct: ["a", "b"] },
+  { id: 48, text: "48) Care dintre următoarele afirmații reprezintă cerințe din standardul ISO 9001?", answers: [{ letter: "a", text: "toți angajații trebuie să aibă un certificat de Introducere în ISO 9001;" }, { letter: "b", text: "păstrarea de înregistrări ca dovadă a competenței angajaților;" }, { letter: "c", text: "definirea competențelor privind SMC pentru toate persoanele care lucrează în domeniul de aplicare al SMC." }], correct: ["b", "c"] },
+  { id: 49, text: "49) Pentru implementarea efectivă a procesului de monitorizare a satisfacției clienților într-o companie, următoarele resurse ar trebui să fie disponibile:", answers: [{ letter: "a", text: "personal disponibil și timp pentru a pregăti chestionare pentru obținerea de informații privind satisfacția clienților;" }, { letter: "b", text: "timpul disponibil pentru top management pentru a coordona punerea în aplicare a procedurii;" }, { letter: "c", text: "persoana responsabilă pentru coordonarea punerii în aplicare a procedurii." }], correct: ["a", "c"] },
+  { id: 50, text: "50) Obiectivele calităţii trebuie să fie:", answers: [{ letter: "a", text: "stabilite pentru funcţiile relevante şi la nivelurile relevante ale organizaţiei;" }, { letter: "b", text: "stabilite pentru fiecare din cerințele standardului SR EN ISO 9001;" }, { letter: "c", text: "măsurabile şi în concordanţă cu politica referitoare la calitate." }], correct: ["a", "c"] },
+  { id: 51, text: "51) Monitorizarea are rolul:", answers: [{ letter: "a", text: "de a ține sub control un proces tehnologic;" }, { letter: "b", text: "de a furniza informații privind certificarea sistemului de managementul calității;" }, { letter: "c", text: "de a furniza informații necesare verificării eficacității sistemului de managementul calității." }], correct: ["a", "c"] },
+  { id: 52, text: "52) Îmbogățirea posturilor implică o serie de schimbări în conținutul acestora precum?", answers: [{ letter: "a", text: "amplifică dimensiunile sociale și umane ale muncii;" }, { letter: "b", text: "creșterea responsabilităților angajaților pentru munca depusă;" }, { letter: "c", text: "reduce monotonia prin creșterea varietății sarcinilor." }], correct: ["b"] },
+  { id: 53, text: "53) Proiectarea posturilor înseamnă determinarea :", answers: [{ letter: "a", text: "specializării și profunzimii postului;" }, { letter: "b", text: "conținutului postului și modului de atingere a performanței;" }, { letter: "c", text: "conținutului și proporțiilor postului." }], correct: ["b"] },
+  { id: 54, text: "54) Cele două componente ale analizei posturilor sunt:", answers: [{ letter: "a", text: "fișa postului și studiul mișcării;" }, { letter: "b", text: "proporțiile și conținutul postului;" }, { letter: "c", text: "descrierea și specificația postului." }], correct: ["c"] },
+  { id: 55, text: "55) Informațiile obținute din descrierea postului sunt sintetizate în:", answers: [{ letter: "a", text: "grafice procesuale;" }, { letter: "b", text: "fișa postului;" }, { letter: "c", text: "documente de observare." }], correct: ["b"] },
+  { id: 56, text: "56) Ca urmare a evaluării posturilor:", answers: [{ letter: "a", text: "Se stabilește un sistem de retribuire echilibrat;" }, { letter: "b", text: "Se oferă informații privind denumirea și localizarea postului în structura firmei;" }, { letter: "c", text: "Se disting caracteristicile cerute ocupantului de post." }], correct: ["a"] },
+  { id: 57, text: "57) Care din combinațiile prezentate reprezintă obiective ale evaluării posturilor?", answers: [{ letter: "a", text: "crește adeziunea angajaților la organizație;" }, { letter: "b", text: "stabilește valoarea și importanța relativă a fiecărui post;" }, { letter: "c", text: "asigură nevoile fundamentale ale oamenilor." }], correct: ["b"] },
+  { id: 58, text: "58) Care sunt principalii factori de dificultate folosiți în evaluarea posturilor prin metoda clasificării posturilor?", answers: [{ letter: "a", text: "responsabilitățile postului;" }, { letter: "b", text: "inițiativa;" }, { letter: "c", text: "antrenamentul." }], correct: ["a"] },
+  { id: 59, text: "59) Precizați care din următoarele variante reprezintă avantaje ale recrutării interne?", answers: [{ letter: "a", text: "atragerea candidaților este mai ușoară, iar selecția este mai rapidă și eficientă;" }, { letter: "b", text: "permite identificarea și atragerea unui număr mai mare de potențiali candidați;" }, { letter: "c", text: "încurajează un nou mod de gândire în cadrul organizației și poate corecta unele obligații contractuale." }], correct: ["a"] },
+  { id: 60, text: "60) Principalele dezavantaje ale recrutării interne sunt:", answers: [{ letter: "a", text: "costul recrutării personalului este mult mai mare;" }, { letter: "b", text: "permite diminuarea cheltuielilor cu pregătirea personalului;" }, { letter: "c", text: "împiedică infuzia de suflu proaspăt și nu favorizează promovarea unor idei noi." }], correct: ["c"] },
+  { id: 61, text: "61) Care din variantele prezentate reprezintă principalele avantaje ale recrutării externe?", answers: [{ letter: "a", text: "motivarea personalului crește, iar climatul de lucru se îmbunătățește;" }, { letter: "b", text: "recrutarea personalului este mai rapidă și mai puțin costisitoare;" }, { letter: "c", text: "permite identificarea și atragerea unui număr mai mare de potențiali candidați." }], correct: ["c"] },
+  { id: 62, text: "62) Care din elementele prezentate reprezintă dezavantaje ale recrutării externe?", answers: [{ letter: "a", text: "timpul necesar adaptării și integrării pe posturi a noilor angajați este mai mare, ceea ce atrage costuri suplimentare;" }, { letter: "b", text: "provoacă apariția de posturi vacante în lanț;" }, { letter: "c", text: "nu permite corectarea eventualelor practici discriminatorii privind angajarea." }], correct: ["a"] },
+  { id: 63, text: "63) Care din variantele prezentate reprezintă etape ale procesului de selecție?", answers: [{ letter: "a", text: "interviul, testarea și verificarea referințelor;" }, { letter: "b", text: "stabilirea criteriilor folosite în selecția candidaților;" }, { letter: "c", text: "alegerea metodelor de culegere a informațiilor necesare." }], correct: ["a"] },
+  { id: 64, text: "64) Recrutarea se intercondiționează cu:", answers: [{ letter: "a", text: "analiza posturilor;" }, { letter: "b", text: "progresul tehnic;" }, { letter: "c", text: "rata șomajului." }], correct: ["a"] },
+  { id: 65, text: "65) Printre avantajele recrutării din interior se numără:", answers: [{ letter: "a", text: "constituie un factor de motivare;" }, { letter: "b", text: "nu este o investiție în resursa umană;" }, { letter: "c", text: "reprezintă o pierdere de timp;" }], correct: ["a"] },
+  { id: 66, text: "66) Recrutarea din interior este eficientă dacă:", answers: [{ letter: "a", text: "firma nu are experiență în domeniul recrutării;" }, { letter: "b", text: "firma nu are adeziunea angajaților;" }, { letter: "c", text: "există un sistem de evaluare și de promovare a angajaților;" }], correct: ["c"] },
+  { id: 67, text: "67) Unul din avantajele recrutării din exterior este că:", answers: [{ letter: "a", text: "este mai puțin costisitoare;" }, { letter: "b", text: "noii angajați aduc perspective și idei noi;" }, { letter: "c", text: "noii angajați se familiarizează repede cu politica firmei;" }], correct: ["b"] },
+  { id: 68, text: "68) Care din următoarele metode de recrutare din exterior presupune un efort minim de recrutare din partea firmei?", answers: [{ letter: "a", text: "anunțurile publicitare;" }, { letter: "b", text: "agențiile de forță de muncă;" }, { letter: "c", text: "persoanele care vin în contact cu firma;" }], correct: ["c"] },
+  { id: 69, text: "69) Se recomandă ca interviul de selecție să fie:", answers: [{ letter: "a", text: "general;" }, { letter: "b", text: "structurat;" }, { letter: "c", text: "nestructurat;" }], correct: ["b"] },
+  { id: 70, text: "70) Decizia finală în procesul de selecție este luată de:", answers: [{ letter: "a", text: "departamentul de resurse umane;" }, { letter: "b", text: "șeful ierarhic al postului vacant;" }, { letter: "c", text: "directorul de resurse umane;" }], correct: ["b"] },
+  { id: 71, text: "71) Firmele care se dezvoltă rapid apelează în general la:", answers: [{ letter: "a", text: "recrutarea din exterior;" }, { letter: "b", text: "recrutarea din interior;" }, { letter: "c", text: "promovarea ca formă de recrutare;" }], correct: ["a"] },
+  { id: 72, text: "72) Recrutarea din exterior are o serie de dezavantaje precum:", answers: [{ letter: "a", text: "perioada de evaluare a potențialilor candidați este scurtă;" }, { letter: "b", text: "costurile sunt ridicate;" }, { letter: "c", text: "angajații noi ajung la randament maxim imediat;" }], correct: ["b"] },
+  { id: 73, text: "73) Interviul de angajare este o metodă de selecție a personalului folosită pentru:", answers: [{ letter: "a", text: "orice nivel ierarhic al postului pentru care se selectează personal;" }, { letter: "b", text: "promovarea personalului;" }, { letter: "c", text: "transferuri în cadrul firmei," }], correct: ["a"] },
+  { id: 74, text: "74) Care din activitățile enumerate intră în categoria dezvoltarea resurselor umane:", answers: [{ letter: "a", text: "angajarea personalului;" }, { letter: "b", text: "recrutarea și selecția personalului;" }, { letter: "c", text: "pregătirea și dezvoltarea profesională;" }], correct: ["c"] },
+  { id: 75, text: "75) Rolul pregătirii profesionale a resurselor umane constă în:", answers: [{ letter: "a", text: "identificarea nevoilor de pregătire;" }, { letter: "b", text: "crearea oportunităților de a învăța și de a elimina decalajele între nivelul real și cel necesar al cunoștințelor;" }, { letter: "c", text: "de a găsi metode noi de pregătire;" }], correct: ["b"] },
+  { id: 76, text: "76) Între instrumentele folosite în managementul motivării se regăsește:", answers: [{ letter: "a", text: "asigurarea competiției constructive;" }, { letter: "b", text: "un sistem de salarizare stimulativ;" }, { letter: "c", text: "delegarea." }], correct: ["a", "b"] },
+  { id: 77, text: "77) Care din următoarele sunt componente ale sistemului de salarizare :", answers: [{ letter: "a", text: "sistemul de sporuri;" }, { letter: "b", text: "salariul de bază;" }, { letter: "c", text: "adaosurile la salariu." }], correct: ["a", "b", "c"] },
+  { id: 78, text: "78) Potrivit literaturii de specialitate, conceptul de carieră are mai multe înțelesuri care se referă la:", answers: [{ letter: "a", text: "avansare;" }, { letter: "b", text: "succesiune de posturi de-a lungul vieții;" }, { letter: "c", text: "parte importantă din viața unui individ." }], correct: ["a", "b"] },
+  { id: 79, text: "79) Un post bine definit este postul care posedă o serie de trăsături precum:", answers: [{ letter: "a", text: "implică un domeniu clar definit de responsabilități, posibilitatea exercitării autorității și elaborării deciziilor;" }, { letter: "b", text: "Oferă recompensele considerate corespunzătoare efortului depus ;" }, { letter: "c", text: "Oferă oportunități de învățare și dezvoltare;" }], correct: ["a", "c"] },
+  { id: 80, text: "80) Pentru proiectele cu impact economic Analiza cost beneficiu este specifică fazei:", answers: [{ letter: "a", text: "de definire;" }, { letter: "b", text: "de concepere;" }, { letter: "c", text: "de îndeplinire." }], correct: ["b"] },
+  { id: 81, text: "81) Procesul de planificare a proiectului este în primul rând specific fazei:", answers: [{ letter: "a", text: "de definire;" }, { letter: "b", text: "de concepere;" }, { letter: "c", text: "de îndeplinire." }], correct: ["a"] },
+  { id: 82, text: "82) Procesul de monitorizare a proiectului este în primul rând specific fazei:", answers: [{ letter: "a", text: "de definire;" }, { letter: "b", text: "de concepere;" }, { letter: "c", text: "de îndeplinire." }], correct: ["c"] },
+  { id: 83, text: "83) Care sunt elementele caracteristice ale proiectelor:", answers: [{ letter: "a", text: "produse, programare, resurse;" }, { letter: "b", text: "produse, timp, resurse, comunicare, monitorizare;" }, { letter: "c", text: "produse, programare, resurse, planificare, organizare, control." }], correct: ["a"] },
+  { id: 84, text: "84) Identificaţi potenţialele capcane posibil de întâlnit în gestiunea proiectului:", answers: [{ letter: "a", text: "formularea clară a obiectivelor;" }, { letter: "b", text: "nevoile de resurse sunt incomplete;" }, { letter: "c", text: "responsabilităţile sunt clar repartizate." }], correct: ["b"] },
+  { id: 85, text: "85) Ce sunt ordonatorii proiectului?", answers: [{ letter: "a", text: "persoanele care ajută la realizarea proiectului;" }, { letter: "b", text: "persoane care definesc rezultatul proiectului;" }, { letter: "c", text: "persoane cu poziţie înaltă în organizaţie care sprijină puternic proiectul, susţine proiectul în diverse ocazii." }], correct: ["b"] },
+  { id: 86, text: "86) Ce sunt suporterii proiectului?", answers: [{ letter: "a", text: "persoanele care ajută la realizarea proiectului;" }, { letter: "b", text: "persoane care definesc rezultatul proiectului;" }, { letter: "c", text: "persoane cu poziţie înaltă în organizaţie care sprijină puternic proiectul, susţine proiectul în diverse ocazii." }], correct: ["a"] },
+  { id: 87, text: "87) Ce sunt partizanii proiectului?", answers: [{ letter: "a", text: "persoanele care ajută la realizarea proiectului;" }, { letter: "b", text: "persoane care definesc rezultatul proiectului;" }, { letter: "c", text: "persoane cu poziţie înaltă în organizaţie care sprijină puternic proiectul, susţine proiectul în diverse ocazii." }], correct: ["c"] },
+  { id: 88, text: "88) Care din următoarele definiţii este cea mai potrivită pentru Diagrama reţea?", answers: [{ letter: "a", text: "tehnică de analiză care permite să stabiliţi optimist, pesimist şi probabil durata activităţii;" }, { letter: "b", text: "schemă care ilustrează ordinea în care se îndeplinesc activităţile în proiect;" }, { letter: "c", text: "abordare organizată pentru a identifica toate activităţile necesare proiectului din faza de planificare şi permite planificarea activităţilor esenţiale." }], correct: ["b"] },
+  { id: 89, text: "89) Care din următoarele grupuri de elemente sunt specifice Diagramei reţea?", answers: [{ letter: "a", text: "eveniment, activitate, durată, perioada, resurse;" }, { letter: "b", text: "eveniment, activitate, durată, resurse;" }, { letter: "c", text: "eveniment, activitate, durată." }], correct: ["c"] },
+  { id: 90, text: "90) Ce este calea critică?", answers: [{ letter: "a", text: "o serie de activităţi pe care le puteţi amâna câtva timp şi totuşi să terminaţi proiectul în cel mai scurt timp;" }, { letter: "b", text: "o serie de activităţi din proiect, aflate în succesiune, cu cea mai mare durată pentru a fi îndeplinite împreună;" }, { letter: "c", text: "perioada maximă de timp cu care puteţi amâna o activitate şi totuşi să terminaţi proiectul în cel mai scurt timp." }], correct: ["b"] },
+  { id: 91, text: "91) Dacă o activitate situată pe o cale necritică se finalizează cu o durată de întârziere mai mică decât timpul său mort, care sunt efectele asupra finalizării proiectului?", answers: [{ letter: "a", text: "proiectul se va finaliza cu întârziere;" }, { letter: "b", text: "proiectul se va finaliza la timp;" }, { letter: "c", text: "proiectul se va finaliza în avans." }], correct: ["b"] },
+  { id: 92, text: "92) Care din următoarele forme de prezentare sunt specifice Structurii de divizare a activităţilor?", answers: [{ letter: "a", text: "format schiţă indentată;" }, { letter: "b", text: "format buline în reţea;" }, { letter: "c", text: "format activitate în aşteptare." }], correct: ["a", "b"] },
+  { id: 93, text: "93) Care din următoarele forme de prezentare sunt specifice pentru Diagrama reţea?", answers: [{ letter: "a", text: "format schiţă indentată;" }, { letter: "b", text: "format activitate ţintă;" }, { letter: "c", text: "format activitate în aşteptare." }], correct: ["b", "c"] },
+  { id: 94, text: "94) Importanța agriculturii derivă din:", answers: [{ letter: "a", text: "ramura de producţie capabilă să acumuleze energie cu ajutorul muncii;" }, { letter: "b", text: "ramura secundară a producţiei agricole;" }, { letter: "c", text: "pondere ridicată a bunurilor și serviciilor consummate." }], correct: ["a"] },
+  { id: 95, text: "95) Economia rurală poate fi definită ca:", answers: [{ letter: "a", text: "un ansamblu de observaţii metodologice, legi şi percepte specifice economiei politice care se aplică activităţilor şi vieţii agricultorilor, relaţiilor cu alte profesii, şi care evidenţiază locul agriculturii în societăţile naţionale şi în schimburile internaţionale;" }, { letter: "b", text: "o ramură ce studiază întreprinderile agricole, raporturile între diversele sale elemente, condiţiile de producţie şi schimburile ce conduc la obţinerea de profit;" }, { letter: "c", text: "o ramură ce studiază întreprinderile industriale, raporturile între diversele agricultură și industrie și condiţiile de producţie." }], correct: ["a"] },
+  { id: 96, text: "96) În funcţie de destinaţie, fondul funciar este alcătuit din următoarele grupe de terenuri:", answers: [{ letter: "a", text: "terenuri agricole, terenuri forestiere, terenuri aflate permanent sub ape, terenuri din intravilan, terenuri cu destinație special;" }, { letter: "b", text: "terenuri arabile, plantațiile și pepinierele viticole, plantațiile și pepinierele pomicole, plantațiile de hamei şi duzi, pășunile şi fânețele:" }, { letter: "c", text: "terenurile forestiere, pășunile împădurite, terenurile ocupate cu construcții şi instalații agrotehnice, amenajările piscicole şi de îmbunătățiri funciare." }], correct: ["a"] },
+  { id: 97, text: "97) Care sunt avantajele proprietăţii private în economia de piaţă?", answers: [{ letter: "a", text: "asigură o autonomie deplină agenţilor economici;" }, { letter: "b", text: "stimulează iniţiativa, inovarea tehnică și comercială;" }, { letter: "c", text: "creşte incertitudinea operaţiilor economice." }], correct: ["a", "b"] },
+  { id: 98, text: "98) Care sunt dezavantajele proprietăţii de stat?", answers: [{ letter: "a", text: "favorizează centralismul în luarea deciziilor, împiedică adaptabilitatea la cerinţele pieţei;" }, { letter: "b", text: "favorizează apariţia elementelor de birocratism, ceea ce duce în final la întârzierea luării deciziilor;" }, { letter: "c", text: "diminuează riscul economic prin mai buna adaptare la modificarea fenomenelor perturbatorii de piaţă." }], correct: ["a", "b"] },
+  { id: 99, text: "99) Care sunt însușirile pământului ca mijloc de producție?", answers: [{ letter: "a", text: "este limitat ca întindere, este de neînlocuit, nu se uzează, are un caracter imobil, nu poate fi multiplicat;" }, { letter: "b", text: "este un bun particular, nemobil, nereproductibil, eterogen, indivizibil, având anumite caracteristici nedisociabile (forma, suprafață, poziție);" }, { letter: "c", text: "îndeplinește simultan mai multe funcții cum ar fi: producție, consum, refugiu, speculații." }], correct: ["a", "b", "c"] },
+  { id: 100, text: "100) Menționați, prin intermediul căror metode se poate aprecia cât mai real raportul dintre industrie și agricultură în perioada contemporană:", answers: [{ letter: "a", text: "foarfecele prețurilor;" }, { letter: "b", text: "programare liniară;" }, { letter: "c", text: "matematice." }], correct: ["a"] },
+  { id: 101, text: "101) Agricultura durabilă reprezintă:", answers: [{ letter: "a", text: "ramura care poate funcționa profitabil din punct de vedere economic dar compatibil cu constrângerile de natură ecologică;" }, { letter: "b", text: "ramura care poate funcționa profitabil din punct de vedere economic dar fără să țină cont de efectele asupra mediului;" }, { letter: "c", text: "activitate agricolă din care nu se obține profit." }], correct: ["a"] },
+  { id: 102, text: "102) Dezvoltarea economiilor rurale presupune:", answers: [{ letter: "a", text: "repoziționarea industriilor agroalimentare și a altor sectoare bazate pe resurse naturale în economia bazată pe cunoaștere;" }, { letter: "b", text: "un cadru instituțional capabil să asigure progresul afacerilor rurale și crearea de servicii publice inovatoare;" }, { letter: "c", text: "specializarea economiei rurale pe activități turistice." }], correct: ["a", "b"] },
+  { id: 103, text: "103) Dezvoltarea durabilă propune mai multe reguli:", answers: [{ letter: "a", text: "de sustenabilitate;" }, { letter: "b", text: "matematice;" }, { letter: "c", text: "teoretice." }], correct: ["a"] },
+  { id: 104, text: "104) Care din următoarele funcţii sunt specifice agriculturii:", answers: [{ letter: "a", text: "furnizoare de forţă de muncă;" }, { letter: "b", text: "sursă de valută;" }, { letter: "c", text: "furnizoare de combustibil." }], correct: ["a", "b"] },
+  { id: 105, text: "105) Care din următoarele funcţii sunt specifice agriculturii:", answers: [{ letter: "a", text: "crearea, dezvoltarea şi împrospătarea periodică a rezervelor de stat;" }, { letter: "b", text: "creare a acumulărilor generale ale statului;" }, { letter: "c", text: "creează accentuarea disparităților economiei naționale." }], correct: ["a", "b"] },
+  { id: 106, text: "106) Metodele de estimare a valorii terenurilor se pot clasifica după mai multe criterii, în funcţie de scopul urmărit şi de elementele disponibile în momentul evaluării. Precizaţi care sunt metodele care se disting, după procedeul utilizat?", answers: [{ letter: "a", text: "estimare directă şi indirectă;" }, { letter: "b", text: "estimarea parțială;" }, { letter: "c", text: "estimarea totală." }], correct: ["a"] },
+  { id: 107, text: "107) În agricultură, unde principalul mijloc de producţie este pământul, şi unde obiectele muncii şi câteodată mijloacele de producţie sunt organisme vii, concentrarea producţiei poate fi:", answers: [{ letter: "a", text: "pe orizontală şi pe verticală;" }, { letter: "b", text: "tehnică şi natural;" }, { letter: "c", text: "vegetală şi animal." }], correct: ["a"] },
+  { id: 108, text: "108) Valoarea pământului se exprimă prin:", answers: [{ letter: "a", text: "preţ de vânzare, de cumpărare, cheltuieli de producţie;" }, { letter: "b", text: "valoare venală sau de amator;" }, { letter: "c", text: "preţuri curente și arenda uzuală din localitate." }], correct: ["a", "b"] },
+  { id: 109, text: "109) În literatura de specialitate întâlnim mai multe categorii de fertilitate ale pământului. Care dintre ele apare ca un rezultat al acțiunii omului, exprimându-se în final prin nivelul producției la unitatea de suprafață?", answers: [{ letter: "a", text: "fertilitate naturală;" }, { letter: "b", text: "fertilitate economică;" }, { letter: "c", text: "fertilitate potenţată." }], correct: ["b", "c"] },
+  { id: 110, text: "110) Trăsăturile tehnice ale muncii în agricultură sunt caracterizate de:", answers: [{ letter: "a", text: "munca în agricultură este neplăcută și diversificată;" }, { letter: "b", text: "munca în agricultură este variabilă și subordonată necesităților ființelor vii;" }, { letter: "c", text: "munca este efectuată de oameni, presupune un ansamblu de motivaţii de natură umană, ceea ce lipseşte celorlalţi factori productivi." }], correct: ["a", "b"] },
+  { id: 111, text: "111) Formarea de capital necesar în agricultură pentru diverse utilități se bazează pe următoarele categorii de resurse:", answers: [{ letter: "a", text: "resurse proprii, bugetare și atrase;" }, { letter: "b", text: "resurse bugetare provenite de la bugetul statului;" }, { letter: "c", text: "resurse atrase de pe piețele financiare interne și externe." }], correct: ["a"] },
+  { id: 112, text: "112) Turistul român care se cazează în mediul rural poate fi încadrat în general în următoarele tipuri:", answers: [{ letter: "a", text: "profilul turistului de week-end;" }, { letter: "b", text: "profilul turistului tradiționalist;" }, { letter: "c", text: "profilul turistului preferențial." }], correct: ["a", "b"] },
+  { id: 113, text: "113) Turistul străin care se cazează în mediul rural poate fi încadrat în general în următoarele tipuri:", answers: [{ letter: "a", text: "turist străin occidental;" }, { letter: "b", text: "turist străin neoccidental;" }, { letter: "c", text: "turistul străin național." }], correct: ["a", "b"] },
+  { id: 114, text: "114) Turismul rural poate fi definit ca:", answers: [{ letter: "a", text: "o formă de turism care se desfășoară în mediul rural, ce valorifică resursele turistice locale și echipamentele turistice, inclusiv pensiunile și fermele agroturistice;" }, { letter: "b", text: "ca o formă particulară de turism bazată pe o anumită „artă” de a primi turistul și pe un comportament diferit de cel practicat în mod obișnuit în cadrul altor tipuri de turism;" }, { letter: "c", text: "activitate turistică complementară agriculturii ce se desfășoară într-o exploatație agricolă." }], correct: ["a", "b"] },
+  { id: 115, text: "115) Agroturismul rural poate fi definit ca:", answers: [{ letter: "a", text: "activitate turistică complementară agriculturii ce se desfășoară într-o exploatație agricolă;" }, { letter: "b", text: "formă particulară de turism, complexă, cuprinzând activitatea turistică propriu-zisă, cât și activitatea economică de regulă agricolă practicată de gazdele turiștilor;" }, { letter: "c", text: "formă a turismului rural care utilizează pentru cazare și servire a mesei numai pensiunile turistice și pensiunile agroturistice, beneficiind de un mediu nepoluat și pitoresc, de atracțiile turistice naturale și de valorile cultural-istorice, de tradițiile și obiceiurile prezente în mediul rural." }], correct: ["a", "b", "c"] },
+  { id: 116, text: "116) Asociaţia Naţională de Turism Rural, Ecologic şi Cultural – ANTREC sprijină legiferarea şi omologarea pensiunilor, deţine publicaţii şi organizează evenimente. În ce an a fost înfiinţată ANTREC?", answers: [{ letter: "a", text: "1989;" }, { letter: "b", text: "1994;" }, { letter: "c", text: "2000." }], correct: ["b"] },
+  { id: 117, text: "117) Conform Ordinului Ministrului pentru întreprinderi mici și mijlocii, comerț, turism și profesii liberale nr. 636/2008 în turismul rural se aplică următoarele clasificări:", answers: [{ letter: "a", text: "pensiuni turistice – stele;" }, { letter: "b", text: "pensiuni agroturistice – flori;" }, { letter: "c", text: "pensiuni agroturistice – stele." }], correct: ["a", "b"] },
+  { id: 118, text: "118) Societățile cooperatiste meșteșugărești organizate în baza Legii 1/2005 au următoarele principii fundamentale de funcționare:", answers: [{ letter: "a", text: "principiul educării, instruirii și informării membrilor cooperatori;" }, { letter: "b", text: "principiul cooperării între societățile cooperative;" }, { letter: "c", text: "principiul preocupării pentru comunitate." }], correct: ["a", "b", "c"] },
+  { id: 119, text: "119) Practicarea meșteșugurilor și activităților artizanale contribuie la:", answers: [{ letter: "a", text: "menținerea specificului identitar;" }, { letter: "b", text: "conectarea comunităților la fluxurile internaționale;" }, { letter: "c", text: "susținerea economică durabilă a propriilor comunității." }], correct: ["a", "b", "c"] },
+  { id: 120, text: "120) Practicarea meșteșugurilor și activităților artizanale conduce la:", answers: [{ letter: "a", text: "încetinirea procesului de depopulare;" }, { letter: "b", text: "păstrarea forței de muncă în mediul rural și a identității rurale;" }, { letter: "c", text: "scăderea diversificării economice și ocupaționale." }], correct: ["a", "b"] },
+  { id: 121, text: "121) Societățile cooperatiste meșteșugărești organizate în baza Legii 1/2005 au următoarele principii fundamentale de funcționare:", answers: [{ letter: "a", text: "principiul asocierii voluntare și deschise;" }, { letter: "b", text: "principiul controlului democratic;" }, { letter: "c", text: "principiul asocierii impuse." }], correct: ["a", "b"] },
+  { id: 122, text: "122) În studiile referitoare la definirile conceptuale ale spațiului rural sunt avute în vedere următoarele abordări:", answers: [{ letter: "a", text: "abordarea funcţională, abordarea politico-economică și abordare asocial;" }, { letter: "b", text: "abordarea multifuncțională, abordarea culturală și abordarea sociologică;" }, { letter: "c", text: "abordarea multiculturală, abordarea mediatică și abordarea productive." }], correct: ["a"] },
+  { id: 123, text: "123) Conform Cartei Europene a Spațiului Rural funcţiile spaţiului rural sunt:", answers: [{ letter: "a", text: "funcţia economică, funcţia ecologică, funcția socio-culturală;" }, { letter: "b", text: "funcţia financiară, funcţia peisagistică, funcția mediatică;" }, { letter: "c", text: "funcţia socio-economică, funcţia socio-politică, funcția mediatică." }], correct: ["a"] },
+  { id: 124, text: "124) Spațiul rural românesc este definit, în principal, de următoarele dimensiuni:", answers: [{ letter: "a", text: "dimensiunea economică;" }, { letter: "b", text: "dimensiunea social;" }, { letter: "c", text: "dimensiunea serviciilor de bază." }], correct: ["a", "b", "c"] },
+  { id: 125, text: "125) Care este caracteristica de bază a economiei de piaţă din punct de vedere al proprietăţii?", answers: [{ letter: "a", text: "proprietatea comună;" }, { letter: "b", text: "proprietatea publică (de stat) și proprietatea private;" }, { letter: "c", text: "proprietatea individuală și proprietatea centralizată." }], correct: ["b"] },
+  { id: 126, text: "126) Care este instrumentul principal de reglare pentru accesul la bunurile economice existente pe piață?", answers: [{ letter: "a", text: "cererea;" }, { letter: "b", text: "oferta;" }, { letter: "c", text: "piața." }], correct: ["c"] },
+  { id: 127, text: "127) Productivitatea este:", answers: [{ letter: "a", text: "o legătură cantitativă între producţie şi factorii de producţie utilizaţi;" }, { letter: "b", text: "rezultatul produsului dintre numărul anual de salariaţi şi durata săptămânală de muncă;" }, { letter: "c", text: "media geometrică a factorilor de producţie." }], correct: ["a"] },
+  { id: 128, text: "128) Conform clasificării statistice, după statutul juridic, exploataţiile agricole se clasifică astfel:", answers: [{ letter: "a", text: "exploataţie agricolă individuală, unitate cu personalitate juridică;" }, { letter: "b", text: "exploataţie de subzistenţă, unitate agricolă comercială;" }, { letter: "c", text: "exploataţie de semi-subzistenţă, unitate agricolă pe acţiuni." }], correct: ["a", "c"] },
+  { id: 129, text: "129) OCDE clasifică regiunile NUTS 3, în funcție de ponderea populației care trăiește în comunitățile rurale, astfel:", answers: [{ letter: "a", text: "predominant rurale (> 50%), intermediare (20% - 50%), predominant urbane (< 20%);" }, { letter: "b", text: "predominant rurale (> 60%), intermediare (40% - 60%), predominant urbane (< 40%);" }, { letter: "c", text: "predominant rurale (> 70%), intermediare (50% - 70%), predominant urbane (< 30%)." }], correct: ["a"] },
+  { id: 130, text: "130) Care dintre următoarele afirmații despre spațiul rural sunt adevărate:", answers: [{ letter: "a", text: "cuprinde teritoriul național, inclusiv ceea ce este urbanizat;" }, { letter: "b", text: "este sinonim cu \"spațiu agrar\";" }, { letter: "c", text: "este un spațiu de producție în care ponderea o dețin activitățile sectoarelor primare." }], correct: ["c"] },
+  { id: 131, text: "131) Conform clasificării spațiului rural, făcută de B.Kayser, spațiul agricol este încadrat în :", answers: [{ letter: "a", text: "spațiul rural periurban;" }, { letter: "b", text: "spațiul rural intermediar;" }, { letter: "c", text: "spațiul rural periferic." }], correct: ["b"] },
+  { id: 132, text: "132) Funcțiile spațiului rural conform Cartei Europene a Spațiului Rural, sunt:", answers: [{ letter: "a", text: "funcția de inventariere, punere în valoare și promovare a patrimoniului comunităților rurale;" }, { letter: "b", text: "funcția economică; funcție ecologică; funcția socio-culturală;" }, { letter: "c", text: "funcția de exploatare rațională a resurselor naturale." }], correct: ["b"] },
+  { id: 133, text: "133) Care dintre următoarele afirmații despre tradiții și obiceiuri sunt adevărate:", answers: [{ letter: "a", text: "ele reprezintă un element mai puțin important în definirea identității naționale;" }, { letter: "b", text: "cultura populară contribuie la păstrarea spațiului rural ca odinioară;" }, { letter: "c", text: "reprezintă frumusețea și autenticitatea satului românesc." }], correct: ["c"] },
+  { id: 134, text: "134) Dezvoltarea rurală:", answers: [{ letter: "a", text: "presupune dezvoltarea întregului spațiu rural, cu accent prioritar pe activitățile agricole tradiționale;" }, { letter: "b", text: "nu se limitează la agricultură, dar exclude dimensiunea socială;" }, { letter: "c", text: "cuprinde acțiuni economice, sociale și culturale, orientate spre îmbunătățirea calității vieții populației rurale și dezvoltarea durabilă a spațiului rural." }], correct: ["c"] },
+  { id: 135, text: "135) Care dintre următoarele afirmații despre dezvoltarea rurală sunt adevărate:", answers: [{ letter: "a", text: "este înscrisă într-un concept mai larg, cel al economiei mediului;" }, { letter: "b", text: "reprezintă o mișcare complexă, orientată, cu caracter ireversibil, desfășurată în ansamblu;" }, { letter: "c", text: "nu poate fi durabilă în situația în care întregul mecanism va fi centrat pe susținerea populației." }], correct: ["b", "c"] },
+  { id: 136, text: "136) Care dintre următoarele afirmații despre turismul rural sunt adevărate:", answers: [{ letter: "a", text: "reprezintă un motor de creștere al activităților non-agricole;" }, { letter: "b", text: "investițiile prin fonduri nerambursabile au însemnat o descreștere a numărului unităților de cazare;" }, { letter: "c", text: "dezvoltarea localităților prin activitățile din acest domeniu nu reprezintă o oportunitate." }], correct: ["a"] },
+  { id: 137, text: "137) În vederea desfășurării de activități nonagricole, la nivelul exploatației agricole se pot realiza activități precum:", answers: [{ letter: "a", text: "producția de preparate tradiționale și comercializarea acestora în târguri special amenajate;" }, { letter: "b", text: "practicarea turismului clasic;" }, { letter: "c", text: "producția la scară largă a elementelor decorative tradiționale." }], correct: ["a"] },
+  { id: 138, text: "138) România urmărește îmbunătățirea unor aspecte ce vizează agricultura și dezvoltarea rurală, precum:", answers: [{ letter: "a", text: "procesarea și marketingul produselor alimentare inclusiv a produselor din pește;" }, { letter: "b", text: "controlul calității produselor industriale;" }, { letter: "c", text: "infrastructura ce deservește orașele." }], correct: ["a"] },
+  { id: 139, text: "139) Printre prioritățile în dezvoltarea rurală, selectate pentru implementare în actualul exercițiu financiar, se numără:", answers: [{ letter: "a", text: "dezvoltarea infrastructurii și crearea de noi locuri de muncă;" }, { letter: "b", text: "organizarea lanțului alimentar, prelucrarea și comercializarea produselor agricole, bunăstarea animalelor și gestionarea riscurilor în agricultură;" }, { letter: "c", text: "investiții în procesare și comercializare, eficiență energetică, marketing, depozitare, condiționare, adaptare la standarde etc." }], correct: ["b"] },
+  { id: 140, text: "140) Politica de dezvoltare rurală, ca parte integrată a Politicii Agricole Comune, se concentrează asupra următoarelor domenii fundamentale:", answers: [{ letter: "a", text: "economie, mediu, fiscalitate, populație rurală;" }, { letter: "b", text: "mediu, digitalizare, economie agroalimentară, populație;" }, { letter: "c", text: "economie agroalimentară, mediu, economie, populație din mediul rural." }], correct: ["c"] },
+  { id: 141, text: "141) Factorii decizionali ai dezvoltării rurale durabile în România sunt:", answers: [{ letter: "a", text: "Președintele;" }, { letter: "b", text: "Guvernatorul BNR;" }, { letter: "c", text: "Parlamentul." }], correct: ["c"] },
+  { id: 142, text: "142) Regiunea rurală își poate îndeplini rolul de furnizor și sursă de recreare și echilibru, de sine stătător, având:", answers: [{ letter: "a", text: "o infrastructură precară;" }, { letter: "b", text: "acces adecvat al activității economice, ne-agrare;" }, { letter: "c", text: "peisaje îngrijite." }], correct: ["b"] },
+  { id: 143, text: "143) Renașterea satului românesc este echivalentă cu:", answers: [{ letter: "a", text: "modernizarea satului românesc;" }, { letter: "b", text: "desființarea structurilor tradiționale;" }, { letter: "c", text: "menținerea agriculturii de subzistență." }], correct: ["a"] },
+  { id: 144, text: "144) Care dintre următoarele elemente vor contribui la renașterea satului românesc?", answers: [{ letter: "a", text: "respectarea stilului arhitectural tradițional;" }, { letter: "b", text: "dezvoltarea activităților de producție în intravilan;" }, { letter: "c", text: "menținerea organizării cadastrale existente, fără intervenții structurale." }], correct: ["a"] },
+  { id: 145, text: "145) În cadrul scenariului de modernizare a satului românesc, veniturile populației rurale sunt asigurate în proporție de:", answers: [{ letter: "a", text: "25–30%;" }, { letter: "b", text: "50–60%;" }, { letter: "c", text: "75–80%." }], correct: ["c"] },
+  { id: 146, text: "146) Ce procent din Pilonul II trebuie alocat obligatoriu pentru acțiuni de mediu și climă?", answers: [{ letter: "a", text: "20%;" }, { letter: "b", text: "35%;" }, { letter: "c", text: "50%." }], correct: ["b"] },
+  { id: 147, text: "147) Care este obiectivul principal al intervenției DR-36?", answers: [{ letter: "a", text: "promovarea agriculturii extensive;" }, { letter: "b", text: "subvenționarea exclusivă a infrastructurii din zonele rurale;" }, { letter: "c", text: "dezvoltarea locală prin implicarea comunităților rurale." }], correct: ["c"] },
+  { id: 148, text: "148) Ce intervenții sunt prevăzute pentru dezvoltarea fermelor în cadrul Pilonului II?", answers: [{ letter: "a", text: "exclusiv pentru ferme ecologice;" }, { letter: "b", text: "sprijin pentru fermele cu dimensiunea economică mare;" }, { letter: "c", text: "investiții în sectorul vegetal și zootehnic." }], correct: ["c"] },
+  { id: 149, text: "149) În ce scop se oferă sprijinul pentru tinerii fermieri?", answers: [{ letter: "a", text: "achiziția de terenuri intravilane;" }, { letter: "b", text: "încurajarea instalării și dezvoltării afacerilor agricole în mediul rural;" }, { letter: "c", text: "subvenționarea agriculturii extensive." }], correct: ["b"] },
+  { id: 150, text: "150) Ce condiție este obligatorie pentru accesarea fondurilor în cadrul intervenției DR-15?", answers: [{ letter: "a", text: "deținerea unei livezi de minimum 10 ha;" }, { letter: "b", text: "utilizarea materialului săditor certificat sau superior;" }, { letter: "c", text: "cultivarea exclusivă a speciilor măr și prun." }], correct: ["b"] },
+  { id: 151, text: "151) Care este obiectivul principal al intervenției DR-30?", answers: [{ letter: "a", text: "instalarea tinerilor fermieri;" }, { letter: "b", text: "înființarea sistemelor de irigații;" }, { letter: "c", text: "achiziția de utilaje pentru ferme mari." }], correct: ["a"] },
+  { id: 152, text: "152) Ce entități pot beneficia de sprijin în cadrul intervenției DR-36?", answers: [{ letter: "a", text: "Grupuri de Acțiune Locală (GAL);" }, { letter: "b", text: "Primării din orașe mari;" }, { letter: "c", text: "Agenți economici din domeniul agricol." }], correct: ["a"] },
+  { id: 153, text: "153) Care este obiectivul principal al Planului Național Strategic, PS PAC 2023-2027?", answers: [{ letter: "a", text: "susținerea cercetării în industria laptelui;" }, { letter: "b", text: "strategia agricolă a României pentru perioada 2023–2027;" }, { letter: "c", text: "reducerea importurilor de pesticide." }], correct: ["b"] },
+  { id: 154, text: "154) Identificați caracteristicile principale ale satului:", answers: [{ letter: "a", text: "preponderența activităților agricole;" }, { letter: "b", text: "un spațiu nelimitat, autonom, în care își desfășoară activitatea un ansamblu de familii înrudite;" }, { letter: "c", text: "stabilirea relațiilor sociale și a unei identități comunitare." }], correct: ["a", "c"] },
+  { id: 155, text: "155) Printre factorii decizionali ai dezvoltării rurale durabile amintim:", answers: [{ letter: "a", text: "societatea civilă;" }, { letter: "b", text: "primarul;" }, { letter: "c", text: "individul și comunitatea." }], correct: ["a", "b", "c"] },
+  { id: 156, text: "156) Menționați documentele menite să reglementeze politica de dezvoltare rurală a statelor membre ale U.E.:", answers: [{ letter: "a", text: "Planurile strategice naționale;" }, { letter: "b", text: "Programele de dezvoltare rurală;" }, { letter: "c", text: "Orientările strategice ale Uniunii Europene." }], correct: ["a", "b", "c"] },
+  { id: 157, text: "157) Principalii factori care influențează ocuparea forței de muncă în zona rurală sunt:", answers: [{ letter: "a", text: "nivelul educațional al populației;" }, { letter: "b", text: "infrastructura;" }, { letter: "c", text: "starea de sănătate." }], correct: ["a", "b", "c"] },
+  { id: 158, text: "158) Deosebirile dintre mediul rural și cel urban se referă la:", answers: [{ letter: "a", text: "utilizarea terenului;" }, { letter: "b", text: "tipul de proprietate;" }, { letter: "c", text: "peisajul cultural." }], correct: ["a", "b", "c"] },
+  { id: 159, text: "159) Spațiul rural național este format din suprafața administrativ teritorială a:", answers: [{ letter: "a", text: "satelor aparținătoare orașelor prevăzute în Anexa 22;" }, { letter: "b", text: "comunelor;" }, { letter: "c", text: "unităților administrativ-teritoriale cu populație de până la 30.000 de locuitori." }], correct: ["a", "b"] },
+  { id: 160, text: "160) Care dintre următoarele afirmații sunt adevărate:", answers: [{ letter: "a", text: "densitatea populației în mediul rural este mult mai redusă față de mediul urban;" }, { letter: "b", text: "densitatea (număr de locuitori / km2) este mult mai mare în mediul rural comparativ cu cea din spațiul urban;" }, { letter: "c", text: "utilizarea terenului reprezintă una dintre diferențele existente între spațiul rural și cel urban." }], correct: ["a", "c"] },
+  { id: 161, text: "161) Acțiunile pe care se bazează statele membre ale U.E. în domeniul îmbunătățirii calității vieții în zonele rurale sunt:", answers: [{ letter: "a", text: "încurajarea inițiativelor locale care să creeze locuri de muncă pentru femei;" }, { letter: "b", text: "dezvoltarea activităților economice în vederea creșterii gradului de ocupare în mediul rural;" }, { letter: "c", text: "dezvoltarea micilor afaceri și a meșteșugurilor tradiționale." }], correct: ["a", "b", "c"] },
+  { id: 162, text: "162) Care din următoarele elemente patrimoniale fac parte din categoria capitalurilor proprii:", answers: [{ letter: "a", text: "capital social;" }, { letter: "b", text: "credite bancare pe termen lung;" }, { letter: "c", text: "furnizori." }], correct: ["a"] },
+  { id: 163, text: "163) Care din următoarele elemente patrimoniale fac parte din categoria activelor circulante:", answers: [{ letter: "a", text: "mijloace de transport;" }, { letter: "b", text: "terenuri;" }, { letter: "c", text: "mărfuri." }], correct: ["c"] },
+  { id: 164, text: "164) Care dintre următoarele venituri este considerat a fi venit din exploatare?", answers: [{ letter: "a", text: "venituri din vânzarea de produse finite;" }, { letter: "b", text: "venituri din sconturi primite;" }, { letter: "c", text: "venituri din diferențe de curs valutar." }], correct: ["a"] },
+  { id: 165, text: "165) Care din următoarele elemente patrimoniale fac parte din categoria stocurilor:", answers: [{ letter: "a", text: "produse finite;" }, { letter: "b", text: "cheltuieli înregistrate în avans;" }, { letter: "c", text: "cheltuieli de constituire." }], correct: ["a"] },
+  { id: 166, text: "166) Creanțele reprezintă:", answers: [{ letter: "a", text: "datorii ale societăţilor către terţi;" }, { letter: "b", text: "drepturi de încasat ale societăţilor;" }, { letter: "c", text: "aporturi aduse la înfiinţarea societăţii." }], correct: ["b"] },
+  { id: 167, text: "167) Care din următoarele elemente patrimoniale fac parte din categoria datoriilor pe termen scurt?", answers: [{ letter: "a", text: "credite bancare pe termen lung;" }, { letter: "b", text: "fondul de participare la profit;" }, { letter: "c", text: "personal – salarii datorate." }], correct: ["c"] },
+  { id: 168, text: "168) Contul 378 Diferențe de preț la mărfuri este utilizat pentru înregistrarea:", answers: [{ letter: "a", text: "valorii diferențelor de preț aferente produselor finite;" }, { letter: "b", text: "valoarea adaosului comercial aferent mărfurilor;" }, { letter: "c", text: "valoarea taxei pe valoarea adăugată." }], correct: ["b"] },
+  { id: 169, text: "169) Care din următoarele afirmații sunt corecte?", answers: [{ letter: "a", text: "Contul 4111 Clienți este cont de datorii cu funcție de pasiv;" }, { letter: "b", text: "Contul 4111 Clienți este cont de creanțe cu funcție de activ;" }, { letter: "c", text: "Contul 4111 Clienți este cont de creanțe cu funcție de pasiv." }], correct: ["b"] },
+  { id: 170, text: "170) Contul 378 Diferențe de preţ la mărfuri se creditează cu:", answers: [{ letter: "a", text: "valoarea adaosului comercial aferent mărfurilor achiziţionate;" }, { letter: "b", text: "valoarea adaosului comercial aferent mărfurilor vândute;" }, { letter: "c", text: "valoarea adaosului comercial aferent mărfurilor descărcate din gestiune." }], correct: ["a"] },
+  { id: 171, text: "171) Contul 408 Furnizori – facturi nesosite are funcţie contabilă de:", answers: [{ letter: "a", text: "cont bifuncţional;" }, { letter: "b", text: "activ;" }, { letter: "c", text: "pasiv." }], correct: ["c"] },
+  { id: 172, text: "172) Contul 409 Furnizori-debitori are funcție contabilă de:", answers: [{ letter: "a", text: "activ;" }, { letter: "b", text: "pasiv;" }, { letter: "c", text: "cont bifuncțional." }], correct: ["a"] },
+  { id: 173, text: "173) Contul 419 Clienți-creditori are funcție contabilă de:", answers: [{ letter: "a", text: "activ;" }, { letter: "b", text: "pasiv;" }, { letter: "c", text: "cont bifuncțional." }], correct: ["b"] },
+  { id: 174, text: "174) Contul 413 Efecte de primit are funcție contabilă de:", answers: [{ letter: "a", text: "cont bifuncţional;" }, { letter: "b", text: "activ;" }, { letter: "c", text: "pasiv." }], correct: ["b"] },
+  { id: 175, text: "175) Contul 401 Furnizori ține evidența:", answers: [{ letter: "a", text: "creanțelor pe care societatea le are de încasat de la terți, rezultate din vânzarea de bunuri, executarea unor lucrări sau prestarea unor servicii;" }, { letter: "b", text: "datoriilor pe care societatea le are față de terți, rezultate din achiziționarea de bunuri, executarea unor lucrări sau prestarea unor servicii de către aceștia;" }, { letter: "c", text: "aportului adus de către acționari la înființarea societății." }], correct: ["b"] },
+  { id: 176, text: "176) Care este diferența fundamentală dintre cheltuielile de exploatare și cele financiare în cadrul unei entități economice?", answers: [{ letter: "a", text: "cheltuielile de exploatare sunt aferente activității de bază a entității, în timp ce cheltuielile financiare reflectă costuri generate de operațiuni cu caracter financiar;" }, { letter: "b", text: "cheltuielile de exploatare includ exclusiv investițiile, iar cele financiare se referă la achiziții de active;" }, { letter: "c", text: "cheltuielile de exploatare includ doar amortizarea, iar cele financiare doar impozitele datorate." }], correct: ["a"] },
+  { id: 177, text: "177) Care din următoarele elemente patrimoniale fac parte din categoria activelor circulante băneşti:", answers: [{ letter: "a", text: "credite bancare pe termen scurt;" }, { letter: "b", text: "casa în lei;" }, { letter: "c", text: "împrumuturi pe termen lung." }], correct: ["b"] },
+  { id: 178, text: "178) Care formulă contabilă exprimă în mod corect vânzarea mărfurilor cu amănuntul?", answers: [{ letter: "a", text: "5311 Casa în lei = % 701 Venituri din vânzarea produselor finite 4427 TVA colectată" }, { letter: "b", text: "5311 Casa în lei = % 707 Venituri din vânzarea mărfurilor 4426 TVA deductibilă" }, { letter: "c", text: "5311 Casa în lei = % 707 Venituri din vânzarea mărfurilor 4427 TVA colectată" }], correct: ["c"] },
+  { id: 179, text: "179) Pornind de la valoarea următoarelor elemente patrimoniale existente în bilanțul unei societăți (Casa în lei = 1.250 lei; Materii prime = 5.750 lei; Mărfuri = 5.000 lei și Producția în curs de execuție = 1.500 lei) valoarea activelor circulante este egală cu:", answers: [{ letter: "a", text: "13.500 lei;" }, { letter: "b", text: "12.000 lei;" }, { letter: "c", text: "1.250 lei." }], correct: ["a"] },
+  { id: 180, text: "180) Care formulă contabilă exprimă în mod corect achiziționarea mărfurilor pe bază de factură?", answers: [{ letter: "a", text: "% 371 Mărfuri 4427 TVA colectată = 401 Furnizori" }, { letter: "b", text: "% 371 Mărfuri 4426 TVA deductibilă = 4111 Clienți" }, { letter: "c", text: "% 371 Mărfuri 4426 TVA deductibilă = 401 Furnizori" }], correct: ["c"] },
+  { id: 181, text: "181) Valoarea adaosului comercial aferent mărfurilor achiziționate de către o societate se determină astfel:", answers: [{ letter: "a", text: "aplicând cota de adaos comercial asupra valorii mărfurilor;" }, { letter: "b", text: "aplicând cota de adaos comercial asupra valorii facturii primite de la furnizor;" }, { letter: "c", text: "aplicând cota de adaos comercial asupra valorii facturii emise către client." }], correct: ["a"] },
+  { id: 182, text: "182) Care din următoarele elemente patrimoniale fac parte din categoria creanțelor:", answers: [{ letter: "a", text: "furnizori – debitori;" }, { letter: "b", text: "furnizori;" }, { letter: "c", text: "clienți." }], correct: ["a", "c"] },
+  { id: 183, text: "183) Care din următoarele elemente patrimoniale fac parte din categoria capitalurilor străine:", answers: [{ letter: "a", text: "personal – salarii datorate;" }, { letter: "b", text: "clienți;" }, { letter: "c", text: "furnizori." }], correct: ["a", "c"] },
+  { id: 184, text: "184) Contul 401 Furnizori se debitează cu:", answers: [{ letter: "a", text: "valoarea plăţilor efectuate în numerar;" }, { letter: "b", text: "valoarea plăţilor efectuate prin virament;" }, { letter: "c", text: "valoarea încasărilor efectuate prin virament." }], correct: ["a", "b"] },
+  { id: 185, text: "185) Contul 4111 Clienţi se creditează cu:", answers: [{ letter: "a", text: "valoarea plăţilor efectuate în numerar;" }, { letter: "b", text: "valoarea încasărilor în numerar;" }, { letter: "c", text: "valoarea încasărilor realizate prin virament." }], correct: ["b", "c"] },
+  { id: 186, text: "186) Amortizarea activelor imobilizate se poate calcula folosind următoarele metode:", answers: [{ letter: "a", text: "amortizarea rapidă;" }, { letter: "b", text: "amortizarea liniară;" }, { letter: "c", text: "amortizarea degresivă." }], correct: ["b", "c"] },
+  { id: 187, text: "187) Principiul permanentei metodelor se referă la aplicarea în mod consecvent a:", answers: [{ letter: "a", text: "politicilor contabile;" }, { letter: "b", text: "metodelor de amortizare;" }, { letter: "c", text: "metodelor de evaluare." }], correct: ["a", "c"] },
+  { id: 188, text: "188) Principiul necompensării nu permite:", answers: [{ letter: "a", text: "compensarea creanțelor cu datoriile;" }, { letter: "b", text: "compensarea veniturilor cu cheltuielile;" }, { letter: "c", text: "compensarea profitului cu pierderea." }], correct: ["a", "b"] },
+  { id: 189, text: "189) Principiul evaluării separate a elementelor de active și de datorii nu permite:", answers: [{ letter: "a", text: "înregistrarea diferențelor favorabile aferente acestora;" }, { letter: "b", text: "înregistrarea diferențelor nefavorabile aferente acestora;" }, { letter: "c", text: "închiderea bilanțului contabil fără stabilirea egalității dintre active și pasiv." }], correct: ["a", "c"] },
+  { id: 190, text: "190) Analiza tehnico-economică se realizează pornind de la:", answers: [{ letter: "a", text: "factori către fenomen;" }, { letter: "b", text: "elementele componente către fenomenul analizat;" }, { letter: "c", text: "fenomenul studiat către factori;" }], correct: ["c"] },
+  { id: 191, text: "191) Rata autonomiei financiare la termen se determină astfel:", answers: [{ letter: "a", text: "capital permanent/total pasiv × 100;" }, { letter: "b", text: "capital propriu/total pasiv × 100;" }, { letter: "c", text: "capital propriu/capital permanent × 100;" }], correct: ["c"] },
+  { id: 192, text: "192) Din punct de vedere al etapei în care se desfăşoară fenomenele economice cercetate, analiza se clasifică în:", answers: [{ letter: "a", text: "analiză microeconomică și macroeconomică;" }, { letter: "b", text: "analiză calitativă și cantitativă;" }, { letter: "c", text: "analiză retrospectivă, curentă și prospectivă" }], correct: ["c"] },
+  { id: 193, text: "193) Pentru fenomenul analizat - venituri totale, factorul cantitativ este:", answers: [{ letter: "a", text: "prețul de vânzare;" }, { letter: "b", text: "cantitatea vândută;" }, { letter: "c", text: "profitul total;" }], correct: ["b"] },
+  { id: 194, text: "194) Metodele analizei cantitative urmăresc:", answers: [{ letter: "a", text: "esența fenomenului;" }, { letter: "b", text: "cuantificarea acțiunii fiecărui element sau factor asupra rezultatului analizat;" }, { letter: "c", text: "construirea unor modele ale fenomenelor economice;" }], correct: ["b"] },
+  { id: 195, text: "195) Factorii calitativi care influențează fenomenele și procesele economice se caracterizează prin:", answers: [{ letter: "a", text: "reprezintă condiția preliminară și indispensabilă a acțiunii factorilor cantitativi;" }, { letter: "b", text: "intervin întotdeauna când rezultatul analizat se referă la mărimi agregate;" }, { letter: "c", text: "sunt de aceeași natură cu fenomenul analizat" }], correct: ["c"] },
+  { id: 196, text: "196) Analiza care urmărește volumul producției obținute se numește:", answers: [{ letter: "a", text: "dinamică;" }, { letter: "b", text: "cantitativă;" }, { letter: "c", text: "microeconomică;" }], correct: ["b"] },
+  { id: 197, text: "197) Indicatorii economici exprimă:", answers: [{ letter: "a", text: "comensurarea influențelor elementelor sau factorilor asupra rezultatului economic;" }, { letter: "b", text: "stabilirea sistemului factorial-cauzal al explicării fenomenului;" }, { letter: "c", text: "consumul de factori, efecte și rezultate ale procesului de producție;" }], correct: ["c"] },
+  { id: 198, text: "198) Analiza care studiază fenomenele economice la data de 31 decembrie se numește:", answers: [{ letter: "a", text: "statică;" }, { letter: "b", text: "macroeconomică;" }, { letter: "c", text: "previzională" }], correct: ["a"] },
+  { id: 199, text: "199) Încasările din activitatea de cazare sunt influențate de:", answers: [{ letter: "a", text: "tariful pe cameră și numărul de camere ocupate;" }, { letter: "b", text: "tariful pe cameră și numărul de camere disponibile;" }, { letter: "c", text: "costul pe cameră și gradul de ocupare;" }], correct: ["a"] },
+  { id: 200, text: "200) Analiza microeconomică cercetează fenomenele economice la nivelul:", answers: [{ letter: "a", text: "unei subramuri economice;" }, { letter: "b", text: "unei unități economice și a părților ei componente;" }, { letter: "c", text: "economiei naționale;" }], correct: ["b"] },
+  { id: 201, text: "201) Durata medie a unui sejur se determină în funcție de:", answers: [{ letter: "a", text: "număr zile turist și gradul de ocupare;" }, { letter: "b", text: "număr zile turist și profitul pe cameră;" }, { letter: "c", text: "număr zile turist și număr turiști;" }], correct: ["c"] },
+  { id: 202, text: "202) Rentabilitatea financiară exprimă:", answers: [{ letter: "a", text: "gradul de utilizare al capitalurilor;" }, { letter: "b", text: "gradul de utilizare al activelor;" }, { letter: "c", text: "gradul de valorificare al preparatelor culinare obținute;" }], correct: ["a"] },
+  { id: 203, text: "203) Analiza care cercetează fenomenele economice în evoluția lor se numește:", answers: [{ letter: "a", text: "statică;" }, { letter: "b", text: "microeconomică;" }, { letter: "c", text: "dinamică;" }], correct: ["c"] },
+  { id: 204, text: "204) După modul de urmărire în timp al fenomenelor economice, analiza se clasifică în:", answers: [{ letter: "a", text: "analiză microeconomică și analiză macroeconomică;" }, { letter: "b", text: "analiză statică și analiză dinamică;" }, { letter: "c", text: "analiză retrospectivă, analiză curentă și analiză previzională;" }], correct: ["b"] },
+  { id: 205, text: "205) Rentabilitatea economică exprimă:", answers: [{ letter: "a", text: "gradul de utilizare al capitalurilor;" }, { letter: "b", text: "gradul de investire al capitalurilor;" }, { letter: "c", text: "gradul de utilizare al activelor patrimoniale;" }], correct: ["c"] },
+  { id: 206, text: "206) Indicii cu bază în lanț se determină prin:", answers: [{ letter: "a", text: "raportarea realizărilor dintr-un an la realizările din anul precedent;" }, { letter: "b", text: "raportarea realizărilor dintr-un an la realizările dintr-un an luat ca an de referință;" }, { letter: "c", text: "raportarea realizărilor dintr-un an la oricare alt an analizat." }], correct: ["a"] },
+  { id: 207, text: "207) Căile de intrare în gestiune ale activelor fixe sunt:", answers: [{ letter: "a", text: "prin lucrări de investiții;" }, { letter: "b", text: "prin plusuri constatate cu ocazia inventarierii;" }, { letter: "c", text: "prin lucrări de construcții-montaj;" }], correct: ["a", "b", "c"] },
+  { id: 208, text: "208) Dimensionarea optimă a stocurilor urmărește:", answers: [{ letter: "a", text: "reducerea costurilor de producție;" }, { letter: "b", text: "reducerea fondurilor băneşti blocate în stocuri;" }, { letter: "c", text: "creşterea vitezei de rotaţie a stocurilor;" }], correct: ["b", "c"] },
+  { id: 209, text: "209) Reprezintă metodă a analizei cantitative:", answers: [{ letter: "a", text: "coeficienții de structură;" }, { letter: "b", text: "coeficienții de echilibru;" }, { letter: "c", text: "coeficienții de eficiență" }], correct: ["a", "b", "c"] },
+  { id: 210, text: "210) Metodele analizei cantitative sunt:", answers: [{ letter: "a", text: "indicatorii economico-financiari;" }, { letter: "b", text: "coeficienţii de structură, echilibru și eficienţă;" }, { letter: "c", text: "metoda substituirilor în lanţ - metoda iterării;" }], correct: ["a", "b", "c"] },
+  { id: 211, text: "211) Coeficienţii de eficienţă rezultă din:", answers: [{ letter: "a", text: "compararea eforturilor depuse cu efectele obţinute;" }, { letter: "b", text: "raportarea rezultatelor obținute la eforturile depuse;" }, { letter: "c", text: "raportarea eforturilor la eforturi sau a efectelor la efecte." }], correct: ["a", "b", "c"] },
+  { id: 212, text: "212) Brevetul de turism are o valabilitate de:", answers: [{ letter: "a", text: "3 ani;" }, { letter: "b", text: "5 ani;" }, { letter: "c", text: "Nelimitată." }], correct: ["c"] },
+  { id: 213, text: "213) Pentru obţinerea brevetului de manager în activitatea de turism, absolvenţii facultăţilor cu profil de turism trebuie să urmeze un curs de formare managerială specific funcţiei, cu o durată de cel puţin:", answers: [{ letter: "a", text: "3 luni;" }, { letter: "b", text: "6 luni;" }, { letter: "c", text: "9 luni." }], correct: ["b"] },
+  { id: 214, text: "214) Pensiunile agroturistice pot avea maxim:", answers: [{ letter: "a", text: "8 camere;" }, { letter: "b", text: "10 camere;" }, { letter: "c", text: "15 camere." }], correct: ["a"] },
+  { id: 215, text: "215) Suprafaţa minimă a unei camere cu 2 paturi la o pensiune agroturistică de 3 margarete este de:", answers: [{ letter: "a", text: "12 mp;" }, { letter: "b", text: "10 mp;" }, { letter: "c", text: "14 mp;" }], correct: ["a"] },
+  { id: 216, text: "216) La pensiunile agroturistice de 4 margarete, punctajul minim rezultat din evaluarea criteriilor suplimentare este de:", answers: [{ letter: "a", text: "80 puncte;" }, { letter: "b", text: "130 puncte;" }, { letter: "c", text: "150 puncte." }], correct: ["b"] },
+  { id: 217, text: "217) La pensiunile agroturistice de 3 margarete, punctajul minim rezultat din evaluarea criteriilor suplimentare este de:", answers: [{ letter: "a", text: "90 puncte" }, { letter: "b", text: "120 puncte" }, { letter: "c", text: "150 puncte" }], correct: ["a"] },
+  { id: 218, text: "218) Numărul maxim de locuri într-o cameră la pensiunile agroturistice de 3 margarete este de:", answers: [{ letter: "a", text: "2" }, { letter: "b", text: "3" }, { letter: "c", text: "4" }], correct: ["b"] },
+  { id: 219, text: "219) Numărul maxim de locuri într-o cameră la pensiunile agroturistice de 4 margarete este de:", answers: [{ letter: "a", text: "2" }, { letter: "b", text: "3" }, { letter: "c", text: "4" }], correct: ["a"] },
+  { id: 220, text: "220) Numărul maxim de locuri într-o cameră la pensiunile agroturistice de 5 margarete este de:", answers: [{ letter: "a", text: "2" }, { letter: "b", text: "3" }, { letter: "c", text: "4" }], correct: ["a"] },
+  { id: 221, text: "221) La clasificarea unei pensiuni agroturistice, câte puncte se obţin, dacă există grătar în aer liber:", answers: [{ letter: "a", text: "2" }, { letter: "b", text: "3" }, { letter: "c", text: "5" }], correct: ["b"] },
+  { id: 222, text: "222) La clasificarea unei pensiuni agroturistice, câte puncte se obţin, dacă există locuri de joacă amenajate pentru copii:", answers: [{ letter: "a", text: "2" }, { letter: "b", text: "7" }, { letter: "c", text: "5" }], correct: ["b"] },
+  { id: 223, text: "223) La clasificarea unei pensiuni agroturistice, câte puncte se obţin, dacă există piscină în aer liber:", answers: [{ letter: "a", text: "12" }, { letter: "b", text: "15" }, { letter: "c", text: "25" }], correct: ["b"] },
+  { id: 224, text: "224) La clasificarea unei pensiuni agroturistice, câte puncte se obţin, dacă există drum carosabil până la poarta pensiunii:", answers: [{ letter: "a", text: "3" }, { letter: "b", text: "5" }, { letter: "c", text: "15" }], correct: ["a"] },
+  { id: 225, text: "225) Brevetul de turism se acordă:", answers: [{ letter: "a", text: "agenţiilor de turism" }, { letter: "b", text: "persoanelor fizice" }, { letter: "c", text: "pensiunilor" }], correct: ["b"] },
+  { id: 226, text: "226) În conformitate cu legislaţia în vigoare, la pensiunile agroturistice, turiştilor li se oferă masa preparată din produse:", answers: [{ letter: "a", text: "naturale" }, { letter: "b", text: "ecologice" }, { letter: "c", text: "chimice" }], correct: ["a"] },
+  { id: 227, text: "227) Suprafaţa minimă a unei camere cu 2 paturi la o pensiune agroturistică de 3 flori este de:", answers: [{ letter: "a", text: "12 mp" }, { letter: "b", text: "15 mp" }, { letter: "c", text: "18 mp" }], correct: ["a"] },
+  { id: 228, text: "228) Termenul de soluţionare a cererii pentru obţinerea brevetului de turism este de:", answers: [{ letter: "a", text: "20 de zile" }, { letter: "b", text: "30 de zile" }, { letter: "c", text: "60 de zile" }], correct: ["b"] },
+  { id: 229, text: "229) Certificatul de clasificare se acordă:", answers: [{ letter: "a", text: "agenţiilor de turism" }, { letter: "b", text: "pensiunilor" }, { letter: "c", text: "restaurantelor" }], correct: ["b", "c"] },
+  { id: 230, text: "230) În conformitate cu legislaţia în vigoare, curte cu amenajări florale se solicită la pensiunile agroturistice de:", answers: [{ letter: "a", text: "3 flori" }, { letter: "b", text: "4 flori" }, { letter: "c", text: "5 flori" }], correct: ["a", "b", "c"] },
+  { id: 231, text: "231) Televizorul este obligatoriu în camerele pensiunilor agroturistice de:", answers: [{ letter: "a", text: "3 flori" }, { letter: "b", text: "4 flori" }, { letter: "c", text: "5 flori" }], correct: ["b", "c"] },
+  { id: 232, text: "232) Autarhia se referă la:", answers: [{ letter: "a", text: "pătrunderea noului în mediul rural;" }, { letter: "b", text: "izolarea din satul tradițional;" }, { letter: "c", text: "mobilitate socială." }], correct: ["b"] },
+  { id: 233, text: "233) Cercetări sociologice semnificative şi originale asupra ruralului tradiţional românesc au fost realizate de:", answers: [{ letter: "a", text: "Școala de la Roma;" }, { letter: "b", text: "Școala de la Chicago;" }, { letter: "c", text: "Școala Monografică de la Bucureşti." }], correct: ["c"] },
+  { id: 234, text: "234) Ruralul tradițional se caracterizează prin:", answers: [{ letter: "a", text: "exod rural;" }, { letter: "b", text: "diversificare ocupațională;" }, { letter: "c", text: "autarhie economică, demografică, socială." }], correct: ["c"] },
+  { id: 235, text: "235) Autarhia socio-culturală se referă:", answers: [{ letter: "a", text: "valori, credințe caracteristice ruralului;" }, { letter: "b", text: "comportamente tradiționale;" }, { letter: "c", text: "omogenitate în valori, credințe, tradiții." }], correct: ["c"] },
+  { id: 236, text: "236) Satul românesc tradițional se baza pe:", answers: [{ letter: "a", text: "exod rural;" }, { letter: "b", text: "autarhie economică și demografică;" }, { letter: "c", text: "preponderenţa ocupaţiilor non-agricole." }], correct: ["b"] },
+  { id: 237, text: "237) În satul tradițional obștea sătească este:", answers: [{ letter: "a", text: "un organ de conducere;" }, { letter: "b", text: "asociație agricolă;" }, { letter: "c", text: "organizație de producători agricoli." }], correct: ["a"] },
+  { id: 238, text: "238) Modelul comunității rurale tradiționale cuprinde:", answers: [{ letter: "a", text: "omogenitatea sociologică, apartenență economică zonală, diversitate socială;" }, { letter: "b", text: "diversitatea spirituală;" }, { letter: "c", text: "autarhie, omogenitate culturală, diversitate socială." }], correct: ["c"] },
+  { id: 239, text: "239) Principala ocupație în mediul rural este:", answers: [{ letter: "a", text: "agricultura;" }, { letter: "b", text: "serviciile;" }, { letter: "c", text: "industria." }], correct: ["a"] },
+  { id: 240, text: "240) Prin inovație se desemnează:", answers: [{ letter: "a", text: "conservatorism;" }, { letter: "b", text: "păstrarea funcționalității generale a gospodăriei agricole;" }, { letter: "c", text: "noi materii prime sau echipamente." }], correct: ["c"] },
+  { id: 241, text: "241) Procesul de acceptare al inovaţiilor cuprinde următoarele etape:", answers: [{ letter: "a", text: "adaptarea, cunoaşterea, preocuparea, evaluarea, experimentarea;" }, { letter: "b", text: "evaluarea, cunoaşterea, preocuparea, experimentarea, adaptarea;" }, { letter: "c", text: "cunoaşterea, preocuparea, evaluarea, experimentarea, adaptarea." }], correct: ["c"] },
+  { id: 242, text: "242) Sursele obiective personale de difuzare a inovațiilor sunt:", answers: [{ letter: "a", text: "liderii de opinie;" }, { letter: "b", text: "grupurile familiale;" }, { letter: "c", text: "experţii, specialiştii, reprezentanţi unor organizaţii specializate în consultanţă agricolă." }], correct: ["c"] },
+  { id: 243, text: "243) Mobilitatea socială se referă la:", answers: [{ letter: "a", text: "deplasarea oamenilor în spațiul natural;" }, { letter: "b", text: "deplasarea oamenilor în spațiul social;" }, { letter: "c", text: "deplasarea oamenilor în spațiul economic." }], correct: ["b"] },
+  { id: 244, text: "244) Mobilitatea verticală se referă la:", answers: [{ letter: "a", text: "trecerea de la un statut superior la unul intermediar și trecerea de la un statut intermediar la un statut superior;" }, { letter: "b", text: "trecerea de la un statut inferior la unul superior și trecerea de la un statut superior la unul inferior;" }, { letter: "c", text: "trecerea de la un statut economic la un statut social și trecerea de la un statut social la unul economic." }], correct: ["b"] },
+  { id: 245, text: "245) Mobilitatea teritorială și cea ocupațională o întâlnim în cazul:", answers: [{ letter: "a", text: "navetismului;" }, { letter: "b", text: "mişcărilor pendulatorii;" }, { letter: "c", text: "migraţiilor." }], correct: ["c"] },
+  { id: 246, text: "246) Navetismul reprezintă:", answers: [{ letter: "a", text: "mobilitate definitivă;" }, { letter: "b", text: "pendularea indivizilor între localităţile de domiciliu şi cele de muncă;" }, { letter: "c", text: "mobilitate instituțională." }], correct: ["b"] },
+  { id: 247, text: "247) Mobilitatea intrageneraţională marchează modificări ale poziției sociale:", answers: [{ letter: "a", text: "de la o generație la alta;" }, { letter: "b", text: "în cadrul aceleiași generații;" }, { letter: "c", text: "în cadrul a două sau mai multe generaţii successive." }], correct: ["b"] },
+  { id: 248, text: "248) Consecința principală a migrației rural-urban este:", answers: [{ letter: "a", text: "creșterea natalității;" }, { letter: "b", text: "diversitatea ocupațională;" }, { letter: "c", text: "îmbătrânirea demografică a populaţiei." }], correct: ["c"] },
+  { id: 249, text: "249) Procesul de modernizare implică:", answers: [{ letter: "a", text: "puține surse de informare;" }, { letter: "b", text: "creştere economică (producţia pe locuitor) relativ continuă;" }, { letter: "c", text: "grad redus de mobilitate socială." }], correct: ["b"] },
+  { id: 250, text: "250) Procesul modernizării are următoarea caracteristică pozitivă:", answers: [{ letter: "a", text: "elimină elementele tradiționale;" }, { letter: "b", text: "determină un schimb neechilibrat între sat și oraș;" }, { letter: "c", text: "vizează aspectele calitative ale vieții sociale (habitat, modele culturale);" }], correct: ["c"] },
+  { id: 251, text: "251) Modernizarea este un proces:", answers: [{ letter: "a", text: "universal, caracteristic atât satului cât și orașului;" }, { letter: "b", text: "caracteristic numai orașului;" }, { letter: "c", text: "caracteristic numai satului." }], correct: ["a"] },
+  { id: 252, text: "252) Satul se definește ca:", answers: [{ letter: "a", text: "diversitatea ocupaţiilor specializate;" }, { letter: "b", text: "o așezare umană cu activități specifice, densitate demografică mare;" }, { letter: "c", text: "o categorie social-teritorială, populaţia se ocupă, în principal, cu agricultura." }], correct: ["c"] },
+  { id: 253, text: "253) Comunităţile rurale se definesc:", answers: [{ letter: "a", text: "norme şi reguli formale;" }, { letter: "b", text: "relații formalizate între instituții;" }, { letter: "c", text: "printr-un ansamblu de gospodării care posedă un teritoriu." }], correct: ["c"] },
+  { id: 254, text: "254) Etapa recoltării datelor este:", answers: [{ letter: "a", text: "etapă teoretică;" }, { letter: "b", text: "etapa empirică;" }, { letter: "c", text: "etapa finală." }], correct: ["b"] },
+  { id: 255, text: "255) Una dintre metodele calitative ale cercetării sociologice este:", answers: [{ letter: "a", text: "ancheta;" }, { letter: "b", text: "observaţia sociologică;" }, { letter: "c", text: "chestionarul." }], correct: ["b"] },
+  { id: 256, text: "256) Interviul sociologic poate fi:", answers: [{ letter: "a", text: "deschis;" }, { letter: "b", text: "semistructurat;" }, { letter: "c", text: "închis." }], correct: ["b"] },
+  { id: 257, text: "257) Reglementarea vieţii sociale a comunităţii rurale tradiționale se baza pe:", answers: [{ letter: "a", text: "norme juridice;" }, { letter: "b", text: "relații formale;" }, { letter: "c", text: "obiceiul pământului." }], correct: ["c"] },
+  { id: 258, text: "258) Familia, ca grup primar, a reprezentat matricea fundamentală de organizare a satului românesc în următoarea etapă de dezvoltare:", answers: [{ letter: "a", text: "familism;" }, { letter: "b", text: "devălmășia;" }, { letter: "c", text: "etapa cooperatistă." }], correct: ["a"] },
+  { id: 259, text: "259) Prima etapă în organizarea unei cercetări sociologice este:", answers: [{ letter: "a", text: "elaborarea proiectului de cercetare;" }, { letter: "b", text: "culegerea şi analizarea datelor;" }, { letter: "c", text: "elaborarea raportului de cercetare." }], correct: ["a", "c"] },
+  { id: 260, text: "260) A doua etapă în organizarea unei cercetări sociologice este:", answers: [{ letter: "a", text: "elaborarea proiectului de cercetare;" }, { letter: "b", text: "culegerea datelor;" }, { letter: "c", text: "analizarea datelor." }], correct: ["a", "b"] },
+  { id: 261, text: "261) Ultima etapă în organizarea unei cercetări sociologice este:", answers: [{ letter: "a", text: "elaborarea proiectului de cercetare;" }, { letter: "b", text: "culegerea şi analizarea datelor;" }, { letter: "c", text: "elaborarea raportului de cercetare." }], correct: ["c"] },
+  { id: 262, text: "262) Obştea avea:", answers: [{ letter: "a", text: "rosturi economice şi administrative;" }, { letter: "b", text: "funcţii judecătoreşti;" }, { letter: "c", text: "de exercitare a controlului social." }], correct: ["a", "b", "c"] },
+  { id: 263, text: "263) Etapa finală a unei cercetării sociologice înseamnă redactarea raportului. Acest raport final cuprinde:", answers: [{ letter: "a", text: "introducere în problemă;" }, { letter: "b", text: "prezentarea tehnicilor şi procedeelor utilizate;" }, { letter: "c", text: "prezentarea concluziilor şi interpretarea rezultatelor;" }], correct: ["a", "b", "c"] },
+  { id: 264, text: "264) Satul devălmaș reprezintă comunitatea în care există:", answers: [{ letter: "a", text: "asociație de gospodării pe baza unui teritoriu exploatat în comun;" }, { letter: "b", text: "predominanța drepturilor comunității, comparativ cu drepturile individuale;" }, { letter: "c", text: "reglementarea vieții sociale cu ajutorul datinilor și normelor tradiționale." }], correct: ["a", "b", "c"] },
+  { id: 265, text: "265) În procesul difuzării inovației, sursele de informare sunt:", answers: [{ letter: "a", text: "surse neoficiale, personale;" }, { letter: "b", text: "surse obiective personale;" }, { letter: "c", text: "surse comerciale;" }], correct: ["a", "b", "c"] },
+  { id: 266, text: "266) Sursele comerciale de difuzare a inovațiilor sunt:", answers: [{ letter: "a", text: "consultanţa agricolă;" }, { letter: "b", text: "vânzătorii;" }, { letter: "c", text: "reprezentanţii firmelor comerciale." }], correct: ["b", "c"] },
+  { id: 267, text: "267) Integrarea specialiștilor depinde de:", answers: [{ letter: "a", text: "capacitatea de învățare;" }, { letter: "b", text: "perceperea și interpretarea specificității rurale;" }, { letter: "c", text: "capacitatea comunicativă." }], correct: ["a", "b", "c"] },
+  { id: 268, text: "268) Mobilitatea socială ascendentă se caracterizează prin:", answers: [{ letter: "a", text: "o nouă poziţie socială superioară celei anterioare;" }, { letter: "b", text: "păstrarea poziţiei sociale;" }, { letter: "c", text: "creşterea nivelului pregătirii şcolare." }], correct: ["a", "c"] },
+  { id: 269, text: "269) Mobilitatea socială poate să fie:", answers: [{ letter: "a", text: "individuală;" }, { letter: "b", text: "de comunitate;" }, { letter: "c", text: "de grup." }], correct: ["a", "c"] },
+  { id: 270, text: "270) Migraţia presupune mişcarea populaţiei:", answers: [{ letter: "a", text: "urban-urban;" }, { letter: "b", text: "urban-rural;" }, { letter: "c", text: "rural-urban;" }], correct: ["a", "b", "c"] },
+  { id: 271, text: "271) Navetismul este:", answers: [{ letter: "a", text: "formă specifică de mobilitate teritorială;" }, { letter: "b", text: "se manifestă prin pendularea unor persoane între localităţile de domiciliu şi cele de muncă;" }, { letter: "c", text: "se manifestă prin mutarea definitivă în localitatea în care persoanele lucrează." }], correct: ["a", "b"] },
+  { id: 272, text: "272) Migrația este:", answers: [{ letter: "a", text: "formă specifică de mobilitate teritorială;" }, { letter: "b", text: "se manifestă prin schimbarea definitivă a domiciliului;" }, { letter: "c", text: "se manifestă prin pendularea între localităţile de domiciliu şi cele de muncă." }], correct: ["a", "b"] },
+  { id: 273, text: "273) După componentele poziţiei sociale care se modifică mobilitatea socială poate fi:", answers: [{ letter: "a", text: "geografică;" }, { letter: "b", text: "profesională;" }, { letter: "c", text: "instrucţională." }], correct: ["a", "b", "c"] },
+  { id: 274, text: "274) Etapele cercetării sociologice sunt:", answers: [{ letter: "a", text: "elaborarea proiectului de cercetare;" }, { letter: "b", text: "culegerea şi analizarea datelor;" }, { letter: "c", text: "elaborarea raportului de cercetare." }], correct: ["a", "b", "c"] },
+  { id: 275, text: "275) Comunităţile urbane se caracterizează prin:", answers: [{ letter: "a", text: "densitate demografică mare;" }, { letter: "b", text: "relaţii sociale reglementate formal;" }, { letter: "c", text: "restrângerea ponderii relaţiilor de rudenie." }], correct: ["a", "b", "c"] },
+  { id: 276, text: "276) Etapa analizării datelor constă în:", answers: [{ letter: "a", text: "codificarea datelor;" }, { letter: "b", text: "construirea de tabele;" }, { letter: "c", text: "interpretarea datelor." }], correct: ["a", "b", "c"] },
+  { id: 277, text: "277) Evaluarea serviciilor este dificilă și subiectivă datorită caracteristicii de:", answers: [{ letter: "a", text: "nestocabilitate;" }, { letter: "b", text: "absență a proprietății;" }, { letter: "c", text: "imaterialitate." }], correct: ["c"] },
+  { id: 278, text: "278) În cazul unei oferte de servicii mai mare decât cererea, dintre consecințele ce pot apărea se numără:", answers: [{ letter: "a", text: "creșterea tarifelor;" }, { letter: "b", text: "neacoperirea cererii;" }, { letter: "c", text: "imobilizarea de fonduri." }], correct: ["c"] },
+  { id: 279, text: "279) După modul de formulare a deciziei de cumpărare, serviciile turistice pot fi:", answers: [{ letter: "a", text: "servicii cu plată și servicii gratuite;" }, { letter: "b", text: "servicii ferme și servicii spontane;" }, { letter: "c", text: "servicii de agrement și servicii de informare." }], correct: ["b"] },
+  { id: 280, text: "280) Pentru o stațiune turistică montană, curba sezonalității este:", answers: [{ letter: "a", text: "cu o singură perioadă de sezon;" }, { letter: "b", text: "fără concentrări semnificative;" }, { letter: "c", text: "cu două perioade de sezon." }], correct: ["c"] },
+  { id: 281, text: "281) Concentrarea cererii turistice se poate manifesta:", answers: [{ letter: "a", text: "în timp și în spațiu;" }, { letter: "b", text: "în timp, spațiu și motivație;" }, { letter: "c", text: "numai datorită unor situații conjuncturale." }], correct: ["b"] },
+  { id: 282, text: "282) Rata profitului se calculează ca:", answers: [{ letter: "a", text: "diferența între venituri și profit;" }, { letter: "b", text: "raport între cheltuieli și profit;" }, { letter: "c", text: "raport între profit și cheltuieli." }], correct: ["c"] },
+  { id: 283, text: "283) Conform legii consumului:", answers: [{ letter: "a", text: "cheltuielile alocate activităților turistice se află în corelație directă cu evoluția veniturilor;" }, { letter: "b", text: "o creștere a veniturilor, cu o anumită proporție, conduce la o scădere cel puțin egală a cheltuielilor turistice;" }, { letter: "c", text: "o scădere a veniturilor, cu o anumită proporție, conduce la o creștere cel puțin egală a cheltuielilor turistice." }], correct: ["a"] },
+  { id: 284, text: "284) Modul de acțiune al ratei şomajului asupra activității turistice se poate rezuma astfel:", answers: [{ letter: "a", text: "la o valoare scăzută a ratei şomajului, companiile găsesc cu ușurință pe cei mai buni potențiali angajați pentru locurile de muncă oferite;" }, { letter: "b", text: "o valoare ridicată a ratei şomajului restrânge cererea, în sensul în care vor fi puţini cumpărători ai bunurilor şi serviciilor produse de către companii;" }, { letter: "c", text: "rata șomajului nu are nici o influență asupra dezvoltării activităților turistice." }], correct: ["b"] },
+  { id: 285, text: "285) Gradul de ocupare sau coeficientul de utilizare a capacităţii pensiunii agroturistice (Cucc) reprezintă:", answers: [{ letter: "a", text: "raportul dintre capacitatea ocupată sau efectiv folosită și capacitatea teoretică sau maxim posibilă;" }, { letter: "b", text: "raportul dintre capacitatea teoretică sau maxim posibilă și capacitatea ocupată sau efectiv folosită;" }, { letter: "c", text: "nici una din modalitățile de calcul de mai sus." }], correct: ["a"] },
+  { id: 286, text: "286) Din categoria zonelor cu o activitate cvasipermanentă sau fără concentrări sezoniere semnificative fac parte:", answers: [{ letter: "a", text: "centrele urbane și stațiunile balneo-climatice;" }, { letter: "b", text: "stațiunile de pe litoral;" }, { letter: "c", text: "arealele turistice din zona Deltei Dunării." }], correct: ["a"] },
+  { id: 287, text: "287) Durata medie a sejurului a înregistrat în ultimele decenii:", answers: [{ letter: "a", text: "un curs ascendent lent;" }, { letter: "b", text: "un curs staționar;" }, { letter: "c", text: "o tendință descrescătoare." }], correct: ["c"] },
+  { id: 288, text: "288) Piaţa turistică se caracterizează prin:", answers: [{ letter: "a", text: "transparență;" }, { letter: "b", text: "structuri specifice concurenței imperfecte;" }, { letter: "c", text: "imobilitatea cererii." }], correct: ["b"] },
+  { id: 289, text: "289) Unitățile de primire turistică independente, gestionate de proprietar, reprezintă o formă de exploatare a unităților de cazare:", answers: [{ letter: "a", text: "cu o poziție dominantă pe plan mondial, în cadrul diverselor forme de exploatare;" }, { letter: "b", text: "care semnifică faptul că atât proprietatea cât și managementul sunt deținute de o persoană individuală sau de o firmă privată sau societate pe acțiuni;" }, { letter: "c", text: "în care proprietarul nu trebuie să se implice personal în managementul unităților de cazare." }], correct: ["b"] },
+  { id: 290, text: "290) Pragul de rentabilitate, numit şi punct critic sau punct de echilibru, reprezintă:", answers: [{ letter: "a", text: "indicatorul financiar care exprimă acel nivel de activitate pentru care firma nu obține nici profit nici pierdere;" }, { letter: "b", text: "indicatorul financiar care exprimă acel nivel de activitate pentru care încasările firmei sunt mai mici decât costurile totale de producție;" }, { letter: "c", text: "indicatorul financiar care exprimă acel nivel de activitate la care se obţine o rată normală a profitului pentru sectorul respectiv." }], correct: ["a"] },
+  { id: 291, text: "291) Elasticitatea cererii de servicii turistice la preț măsoară reacția consumatorilor la variațiile de preț și se calculează prin:", answers: [{ letter: "a", text: "raportarea variației relative a cantității cumpărate la variația relativă corespunzătoare a costului de oportunitate;" }, { letter: "b", text: "raportarea variației relative a cantității cumpărate la variația relativă corespunzătoare a venitului;" }, { letter: "c", text: "nici una din modalitățile enumerate." }], correct: ["c"] },
+  { id: 292, text: "292) Coincidența în timp şi spaţiu a producţiei şi consumului serviciilor agroturistice reprezintă o caracteristică a serviciilor turistice ce desemnează:", answers: [{ letter: "a", text: "simultaneitatea execuţiei şi consumului serviciilor;" }, { letter: "b", text: "tangibilitatea serviciilor;" }, { letter: "c", text: "omogenitatea serviciilor." }], correct: ["a"] },
+  { id: 293, text: "293) Oferta dintr-un anumit serviciu va crește dacă:", answers: [{ letter: "a", text: "cresc costurile de producție;" }, { letter: "b", text: "scade prețul bunului;" }, { letter: "c", text: "intră noi firme pe piață." }], correct: ["c"] },
+  { id: 294, text: "294) Dacă cererea pentru produsele turistice balneare este inelastică, care din următoarele afirmații sunt adevărate:", answers: [{ letter: "a", text: "reducerea prețurilor va duce la o scădere a veniturilor furnizorilor de servicii balneare;" }, { letter: "b", text: "reducerea prețurilor va duce la creșterea veniturilor furnizorilor de servicii balneare;" }, { letter: "c", text: "reducerea prețurilor nu va afecta veniturile furnizorilor de servicii balneare." }], correct: ["a"] },
+  { id: 295, text: "295) Atunci când veniturile populației cresc, serviciile turistice de cazare devin mai accesibile iar curba cererii:", answers: [{ letter: "a", text: "se deplasează spre stânga;" }, { letter: "b", text: "se deplasează spre dreapta;" }, { letter: "c", text: "nu are loc nici o deplasare a curbei cererii, ci o deplasare de-a lungul curbei cererii." }], correct: ["b"] },
+  { id: 296, text: "296) Ce fel de cerere va fi pe o piață unde prețul unei camere de cazare crește de la 200 u.m. la 240, iar cererea zilnică se reduce de la 50 la 40 buc.?", answers: [{ letter: "a", text: "elastică;" }, { letter: "b", text: "inelastică;" }, { letter: "c", text: "cerere cu elasticitate unitară." }], correct: ["c"] },
+  { id: 297, text: "297) Dacă curba cererii pentru un anumit produs turistic se deplasează spre stânga la creșterea veniturilor consumatorilor, avem de-a face cu un:", answers: [{ letter: "a", text: "produs normal;" }, { letter: "b", text: "produs inferior;" }, { letter: "c", text: "produs superior." }], correct: ["b", "c"] },
+  { id: 298, text: "298) Preţurile CIF cuprind:", answers: [{ letter: "a", text: "cheltuielile de transport până la portul de destinaţie, fără a fi acoperite cheltuielile de asigurare;" }, { letter: "b", text: "cheltuielile de transport, asigurare şi navlu până la portul de destinaţie;" }, { letter: "c", text: "cheltuielile de transport şi asigurare până la portul de destinaţie, fără a fi acoperite cheltuielile de navlu." }], correct: ["b"] },
+  { id: 299, text: "299) În cazul preţurilor franco – destinaţie:", answers: [{ letter: "a", text: "marfa este livrată cumpărătorului şi toate cheltuielile de manipulare, încărcare, transport şi asigurare cad în sarcina acestuia;" }, { letter: "b", text: "marfa este livrată cumpărătorului şi toate cheltuielile de manipulare, încărcare, transport şi asigurare cad în sarcina furnizorului;" }, { letter: "c", text: "marfa este livrată cumpărătorului şi cheltuielile de manipulare, încărcare, transport şi asigurare se împart între furnizor şi cumpărător." }], correct: ["b"] },
+  { id: 300, text: "300) Care este prima categorie de preţ care a apărut în istorie?", answers: [{ letter: "a", text: "preţul relativ;" }, { letter: "b", text: "preţul real;" }, { letter: "c", text: "preţul curent." }], correct: ["a"] },
+  { id: 301, text: "301) Cum vor fi preţurile furnizorilor care nu au putere de negociere în relaţia cu clienţii?", answers: [{ letter: "a", text: "ridicate;" }, { letter: "b", text: "scăzute;" }, { letter: "c", text: "preţurile nu sunt influenţate de puterea de negociere." }], correct: ["b"] },
+  { id: 302, text: "302) Care din afirmaţiile următoare sunt corecte?", answers: [{ letter: "a", text: "prin subvenţionarea exporturilor preţul pe piaţa internă nu este modificat;" }, { letter: "b", text: "prin subvenţionarea exporturilor preţul pe piaţa internă devine mai mic;" }, { letter: "c", text: "prin subvenţionarea exporturilor preţul pe piaţa internă devine mai mare." }], correct: ["c"] },
+  { id: 303, text: "303) Cum vor fi preţurile produselor unui sector de activitate neprotejat prin bariere la intrare importante?", answers: [{ letter: "a", text: "ridicate;" }, { letter: "b", text: "scăzute;" }, { letter: "c", text: "Preţurile nu sunt influenţate de barierele la intrare." }], correct: ["b"] },
+  { id: 304, text: "304) Puterea de negociere a clienţilor este mare atunci când:", answers: [{ letter: "a", text: "produsele cumpărate din sector reprezintă o parte mică a costurilor sau a achiziţiilor clientului;" }, { letter: "b", text: "produsele cumpărate din sector sunt diferenţiate;" }, { letter: "c", text: "acest grup este concentrat sau cumpără cantităţi importante în raport cu cifra de afaceri a vânzătorului." }], correct: ["c"] },
+  { id: 305, text: "305) Între preţul de echilibru şi preţul pieţei pot exista următoarele corelaţii:", answers: [{ letter: "a", text: "dacă oferta este excedentară, preţul pieţei este mai mare decât preţul de echilibru;" }, { letter: "b", text: "dacă oferta este excedentară, preţul pieţei este mai mic decât preţul de echilibru;" }, { letter: "c", text: "preţul pieţei nu poate fi egal cu preţul de echilibru." }], correct: ["b"] },
+  { id: 306, text: "306) Curba costului marginal are următoarea evoluţie pe termen scurt:", answers: [{ letter: "a", text: "se situează sub curba costului mediu când acesta creşte;" }, { letter: "b", text: "intersectează curba costului mediu în punctul de minim al acestuia;" }, { letter: "c", text: "costul marginal se situează deasupra costului mediu cât timp acesta scade." }], correct: ["b"] },
+  { id: 307, text: "307) Care din afirmaţiile de mai jos sunt corecte:", answers: [{ letter: "a", text: "oferta este considerată ca fiind legată în mod pozitiv de preţ iar funcţia ofertei este descrescătoare în preţ;" }, { letter: "b", text: "cu cât preţul este mai ridicat cu atât oferta tinde să scadă;" }, { letter: "c", text: "oferta este considerată ca fiind legată în mod pozitiv de preţ iar funcţia ofertei este crescătoare în preţ." }], correct: ["c"] },
+  { id: 308, text: "308) Cum vor fi preţurile produselor unui sector de activitate relativ concentrat în relaţia cu clienţii?", answers: [{ letter: "a", text: "ridicate;" }, { letter: "b", text: "scăzute;" }, { letter: "c", text: "preţurile nu sunt influenţate de concentrarea sectorului de activitate." }], correct: ["a"] },
+  { id: 309, text: "309) Intrarea unui nou venit într-un sector de activitate care realizează produse diferenţiate presupune riscuri:", answers: [{ letter: "a", text: "relativ mari;" }, { letter: "b", text: "relativ mici;" }, { letter: "c", text: "riscurile asociate intrării într-un sector de activitate nu depind de diferenţierea produselor." }], correct: ["a"] },
+  { id: 310, text: "310) Cum vor fi preţurile produselor unui sector de activitate ale cărui produse sunt concurate de produse de înlocuire cu preţ comparativ relativ scăzut?", answers: [{ letter: "a", text: "ridicate;" }, { letter: "b", text: "scăzute;" }, { letter: "c", text: "preţurile de valorificare nu sunt influenţate de preţurile produselor de înlocuire." }], correct: ["b"] },
+  { id: 311, text: "311) Sunteţi un exportator român de ulei vegetal. Care din următoarele relaţii sunt corecte pentru uleiul exportat de dumneavoastră?", answers: [{ letter: "a", text: "preţul FOB Constanţa < Preţ CIF Londra;" }, { letter: "b", text: "preţul FOB Constanţa > Preţ CIF Londra;" }, { letter: "c", text: "preţul FOB Constanţa = Preţ CIF Londra." }], correct: ["a"] },
+  { id: 312, text: "312) Care este corelaţia dintre preţ şi monedă?", answers: [{ letter: "a", text: "sunt invers proporţionale;" }, { letter: "b", text: "sunt direct proporţionale;" }, { letter: "c", text: "preţul nu se stabileşte în corelaţie cu un anumit etalon, precum moneda." }], correct: ["a"] },
+  { id: 313, text: "313) Care este corelaţia dintre preţ şi valoare?", answers: [{ letter: "a", text: "preţul este direct proporţional cu valoarea;" }, { letter: "b", text: "preţul este invers proporţional cu valoarea;" }, { letter: "c", text: "preţul nu se stabileşte în corelaţie cu valoarea produselor sau serviciilor." }], correct: ["a"] },
+  { id: 314, text: "314) Costurile de transfer includ", answers: [{ letter: "a", text: "costurile de reciclare a forţei de muncă;" }, { letter: "b", text: "costul de timp pentru a proba sau admite o nouă sursă de aprovizionare;" }, { letter: "c", text: "costuri pe termen lung pe care cumpărătorul trebuie să le suporte pentru a trece de la un produs al unui furnizor la altul." }], correct: ["a", "b"] },
+  { id: 315, text: "315) Existenţa produselor diferenţiate semnifică faptul că:", answers: [{ letter: "a", text: "firmele bine stabilite au o imagine de marcă şi o clientelă fidelă;" }, { letter: "b", text: "există o constrângere pe noii veniţi la cheltuieli mari pentru a distruge fidelitatea clientelei existente;" }, { letter: "c", text: "investiţiile pentru instalarea unei imagini de marcă nu sunt foarte riscante." }], correct: ["a", "b"] },
+  { id: 316, text: "316) Preţul real se calculează prin raportarea preţului nominal de la un moment dat la:", answers: [{ letter: "a", text: "preţul unui bun;" }, { letter: "b", text: "preţul unui serviciu;" }, { letter: "c", text: "un venit ales ca etalon." }], correct: ["a", "b", "c"] },
+  { id: 317, text: "317) Preţ flat reprezintă:", answers: [{ letter: "a", text: "preţul la care se negociază cerealele pe piaţa internaţională;" }, { letter: "b", text: "suma plătită în momentul livrării mărfii cu standardul corespunzător integral cu preţul stabilit;" }, { letter: "c", text: "o categorie de preț, care este similară cu preţul net." }], correct: ["a", "b", "c"] },
+  { id: 318, text: "318) O întreprindere aflată în situația de monopol poate să își propună ca strategie de stabilire a prețului:", answers: [{ letter: "a", text: "stabilirea preţului pentru obținerea de profit maxim;" }, { letter: "b", text: "stabilirea preţului pentru maximizarea cifrei de afaceri;" }, { letter: "c", text: "stabilirea preţului pentru maximizarea cantităţii produsă şi comercializată." }], correct: ["a", "b", "c"] },
+  { id: 319, text: "319) O firmă poate opta pentru stabilirea unui preţ la un nivel mai mic decât costul atunci când:", answers: [{ letter: "a", text: "se înregistrează o creştere a cererii pe piaţă;" }, { letter: "b", text: "se înregistrează o diminuare pe termen lung a cererii;" }, { letter: "c", text: "se înregistrează o diminuare masivă a cererii pe termen scurt." }], correct: ["c"] },
+  { id: 320, text: "320) Costul mediu este o categorie de cost despre care se poate afirma că:", answers: [{ letter: "a", text: "nu este legat de volumul de producţie realizat;" }, { letter: "b", text: "se determină în raport cu variaţia producţiei într-un interval de timp;" }, { letter: "c", text: "se poate calcula prin raportarea costului total la numărul de unităţi de produse obţinute" }], correct: ["c"] },
+  { id: 321, text: "321) Elasticitatea cererii în funcţie de preţ exprimă:", answers: [{ letter: "a", text: "variaţia relativă a cantităţii cerute dintr-un produs raportată la modificarea relativă a preţului acelui produs;" }, { letter: "b", text: "variaţia relativă a cantităţii cerute dintr-un produs într-o anumită perioadă de timp;" }, { letter: "c", text: "modificarea relativă a preţului unui produs în funcţie de raportul cerere/ofertă pe piaţă." }], correct: ["a"] },
+  { id: 322, text: "322) Elasticitatea încrucişată permite:", answers: [{ letter: "a", text: "măsurarea variaţiei relative a cererii unui produs în raport cu variaţia relativă a preţului altui produs;" }, { letter: "b", text: "măsurarea variaţiei relative a cererii unui produs în raport cu variaţia relativă a ofertei altui produs;" }, { letter: "c", text: "măsurarea elasticităţii produselor nesubstituibile." }], correct: ["a"] },
+  { id: 323, text: "323) Costul marginal este o categorie de cost despre care se poate afirma că:", answers: [{ letter: "a", text: "nu este influenţat de producerea unei unităţi suplimentare de produs;" }, { letter: "b", text: "se determină în raport cu producţia realizată la un moment dat;" }, { letter: "c", text: "poate fi exprimat ca un raport între creşterea costului total şi creşterea producţiei." }], correct: ["c"] },
+  { id: 324, text: "324) Costul fix mediu este o categorie de cost despre care se poate afirma că:", answers: [{ letter: "a", text: "duce la formarea costului total mediu prin însumarea acestuia cu costul variabil total;" }, { letter: "b", text: "se determină ca un raport între costul fix total şi cantităţile produse;" }, { letter: "c", text: "creşte pe măsura producerii de unităţi suplimentare dintr-un produs." }], correct: ["b"] },
+  { id: 325, text: "325) Costul complet este determinat prin însumarea următoarelor categorii de cost:", answers: [{ letter: "a", text: "costurile directe şi costurile indirecte;" }, { letter: "b", text: "costurile fixe medii şi costurile variabile medii;" }, { letter: "c", text: "costurile medii şi costurile marginale." }], correct: ["a"] },
+  { id: 326, text: "326) Costul total pentru obținerea unei unități de produs este de 370 lei. Prin producerea unei unități suplimentare din același produs, costul total pentru cele două unități produse va crește cu 150 de lei. În condițiile în care costul fix total este de 200 lei,", answers: [{ letter: "a", text: "CVT va crește prin producerea unei unități suplimentare cu 80 de lei;" }, { letter: "b", text: "CVT va fi același;" }, { letter: "c", text: "CVT va crește prin producerea unei unități suplimentare cu 150 de lei." }], correct: ["c"] },
+  { id: 327, text: "327) Costul total pentru obținerea unei unități de produs este de 370 lei. Prin producerea unei unități suplimentare din același produs, costul total pentru cele două unități produse va crește cu 150 de lei. În condițiile în care costul fix total este de 200 lei,", answers: [{ letter: "a", text: "CFM pentru 2 unități produse va fi de 50 de lei;" }, { letter: "b", text: "CFM va fi egal cu CFT;" }, { letter: "c", text: "CFM pentru 2 unități produse va fi de 100 de lei." }], correct: ["c"] },
+  { id: 328, text: "328) Costul total pentru obținerea a 5 unități de produs este de 810 lei. Prin producerea unei unități suplimentare din același produs, costul total pentru cele 6 unități produse va crește cu 70 de lei. În condițiile în care costul fix total este de 200 lei, iar Costul marginal pentru producerea a 5 unități de produs a fost de 70 de lei,", answers: [{ letter: "a", text: "Costul marginal în cazul producerii a 6 unități de produs va fi mai mic decât pentru producerea a 5 unități de produs;" }, { letter: "b", text: "Costul marginal se va menține identic;" }, { letter: "c", text: "Costul marginal în cazul producerii a 6 unități de produs va fi mai mare decât pentru producerea a 5 unități de produs." }], correct: ["b"] },
+  { id: 329, text: "329) Costul total pentru obținerea a 5 unități de produs este de 810 lei. Prin producerea unei unități suplimentare din același produs, costul total pentru cele 6 unități produse va crește cu 70 de lei. În condițiile în care costul fix total este de 200 lei, pentru șase unități produse:", answers: [{ letter: "a", text: "CFM > CVM;" }, { letter: "b", text: "CFM < CVM;" }, { letter: "c", text: "CTM > CVM." }], correct: ["b", "c"] },
+  { id: 330, text: "330) Randamentele de scară pot fi", answers: [{ letter: "a", text: "constante dacă producţia creşte în aceeaşi proporţie cu creşterea inputurilor;" }, { letter: "b", text: "crescătoare dacă outputul creşte într-o proporţie mai mare decât creşterea de inputuri;" }, { letter: "c", text: "descrescătoare, dacă producţia creşte într-o proporţie mai mică." }], correct: ["a", "b", "c"] },
+  { id: 331, text: "331) Newsletter-ul electronic este un instrument de marketing pe care îl utilizează organizaţiile turistice pentru a promova oferta de produse şi/sau servicii în cadrul campaniilor de promovare:", answers: [{ letter: "a", text: "în presa scrisă;" }, { letter: "b", text: "online;" }, { letter: "c", text: "la radio." }], correct: ["b"] },
+  { id: 332, text: "332) Distribuţia exclusivă a produsului turistic presupune folosirea:", answers: [{ letter: "a", text: "anumitor intermediari;" }, { letter: "b", text: "unui singur intermediar;" }, { letter: "c", text: "unui număr nelimitat de intermediari." }], correct: ["b"] },
+  { id: 333, text: "333) Segmentul de piaţă reprezintă:", answers: [{ letter: "a", text: "un grup de consumatori cu caracteristici şi nevoi cât mai diversificate;" }, { letter: "b", text: "piaţa (în întregime);" }, { letter: "c", text: "un grup de consumatori cu caracteristici şi nevoi comune sau cât mai apropiate." }], correct: ["c"] },
+  { id: 334, text: "334) Între factorii pieţei care influenţează, în principal, oferta de produse turistice se înscriu:", answers: [{ letter: "a", text: "gradul de amenajare turistică a unui spaţiu geografic;" }, { letter: "b", text: "nivelul veniturilor populaţiei;" }, { letter: "c", text: "nivelul preţurilor şi tarifelor practicate de prestatorii de servicii turistice." }], correct: ["a"] },
+  { id: 335, text: "335) Obiectivul final al activităţii de marketing este:", answers: [{ letter: "a", text: "crearea de valoare-satisfacţie pentru clienţi, în condiţii de profitabilitate pentru prestator;" }, { letter: "b", text: "o politică de resurse umane în concordanţă cu obiectivele firmei;" }, { letter: "c", text: "un management modern." }], correct: ["a"] },
+  { id: 336, text: "336) Distribuţia directă se utilizează atunci când:", answers: [{ letter: "a", text: "se delegă responsabilitatea pentru promovarea, rezervarea şi prestarea serviciilor uneia sau mai multor organizaţii turistice;" }, { letter: "b", text: "organizaţiile turistice îşi asumă responsabilitatea totală pentru promovarea, rezervarea şi prestarea serviciilor către clienţi;" }, { letter: "c", text: "se foloseşte un număr mare de intermediari pentru promovarea, rezervarea şi prestarea serviciilor către clienţi." }], correct: ["b"] },
+  { id: 337, text: "337) După tipul de turism practicat, zonele de interes turistic pot fi clasificate în:", answers: [{ letter: "a", text: "climaterice și peisagistice, de pescuit și de vânătoare, etnografice și folclorice;" }, { letter: "b", text: "de sejur, odihnă și tratament, cultural, etnografic-folcloric, muzeistic, montan, sportiv, itinerant;" }, { letter: "c", text: "Munții Carpați, Marea Neagră și Delta Dunării." }], correct: ["b"] },
+  { id: 338, text: "338) Originalitatea produsului turistic este conferită de:", answers: [{ letter: "a", text: "caracteristicile produsului, care sunt identice celor ale concurenţilor;" }, { letter: "b", text: "preţul produsului;" }, { letter: "c", text: "caracteristicile produsului, care sunt diferite şi superioare calitativ celor ale concurenţilor." }], correct: ["c"] },
+  { id: 339, text: "339) În domeniul agroturismului și în cel al alimentației publice, impactul cel mai mare îl are promovarea:", answers: [{ letter: "a", text: "realizată online (site-uri de profil, rețele de socializare);" }, { letter: "b", text: "prin materiale scrise (broșuri, pliante);" }, { letter: "c", text: "prin intermediul mass-media (radio, TV)." }], correct: ["a"] },
+  { id: 340, text: "340) Mediul de marketing reprezintă un concept:", answers: [{ letter: "a", text: "sinonim mediului extern;" }, { letter: "b", text: "care include deopotrivă mediul extern, mediul intern şi relaţiile dintre acestea;" }, { letter: "c", text: "inexistent." }], correct: ["b"] },
+  { id: 341, text: "341) Concurenţa este total absentă în situaţia de:", answers: [{ letter: "a", text: "concurenţă pură;" }, { letter: "b", text: "monopol;" }, { letter: "c", text: "concurenţă imperfectă." }], correct: ["b"] },
+  { id: 342, text: "342) În raport cu rolul activității de comunicare de marketing, există strategii:", answers: [{ letter: "a", text: "ofensive;" }, { letter: "b", text: "concentrate;" }, { letter: "c", text: "diferențiate." }], correct: ["a"] },
+  { id: 343, text: "343) Numărul total al consumatorilor care ar putea cumpăra un produs turistic la un moment dat formează:", answers: [{ letter: "a", text: "piaţa reală a produsului;" }, { letter: "b", text: "piaţa potenţială a produsului;" }, { letter: "c", text: "cota relativă de piaţă a pensiunii." }], correct: ["b"] },
+  { id: 344, text: "344) Dintre componentele mix-ului de marketing, în eforturile de fidelizare a turiştilor se apelează cel mai adesea la:", answers: [{ letter: "a", text: "preţ;" }, { letter: "b", text: "distribuţie;" }, { letter: "c", text: "produs." }], correct: ["a"] },
+  { id: 345, text: "345) Componente ale mix-ului de marketing care au impact asupra turiştilor sunt:", answers: [{ letter: "a", text: "produsul şi preţul;" }, { letter: "b", text: "distribuţia şi promovarea;" }, { letter: "c", text: "ambele variante." }], correct: ["c"] },
+  { id: 346, text: "346) În rândul factorilor care acţionează asupra cererii, iar prin intermediul acesteia asupra pieţei turistice, se înscriu:", answers: [{ letter: "a", text: "gradul de concentrare a pieţei turistice;" }, { letter: "b", text: "nivelul inflaţiei;" }, { letter: "c", text: "nivelul de dezvoltare a infrastructurii." }], correct: ["b"] },
+  { id: 347, text: "347) Principalele instrumente de comunicare folosite de către organizaţiile turistice în cadrul campaniilor de publicitate exterioară sunt:", answers: [{ letter: "a", text: "spoturile radio şi clipurile TV;" }, { letter: "b", text: "afişele publicitare;" }, { letter: "c", text: "bannerele publicitare." }], correct: ["b", "c"] },
+  { id: 348, text: "348) Primul pas al analizei mediului de marketing al organizaţiei turistice este reprezentat de:", answers: [{ letter: "a", text: "identificarea punctelor tari ale organizaţiei;" }, { letter: "b", text: "identificarea oportunităţilor prezente;" }, { letter: "c", text: "evaluarea oportunităţilor prezente." }], correct: ["b", "c"] },
+  { id: 349, text: "349) Particularităţile produsului turistic sunt:", answers: [{ letter: "a", text: "faptul că, în majoritatea cazurilor, produsul turistic este rezultatul acţiunii conjugate a mai multor prestatori de servicii;" }, { letter: "b", text: "caracterul nestocabil al majorităţii componentelor produsului turistic;" }, { letter: "c", text: "legarea directă de factorul timp (sezonalitate)." }], correct: ["a", "b", "c"] },
+  { id: 350, text: "350) Evoluţia de ansamblu a pieţei turistice este determinată de:", answers: [{ letter: "a", text: "potenţialul turistic al unei zone, exprimat prin volumul, structura şi calitatea resurselor turistice;" }, { letter: "b", text: "gradul de amenajare turistică a unui spaţiu geografic;" }, { letter: "c", text: "nivelul de dezvoltare a infrastructurii unui spaţiu geografic." }], correct: ["a", "b", "c"] },
+  { id: 351, text: "351) O nişă de piaţă atractivă se caracterizează prin următoarele elemente:", answers: [{ letter: "a", text: "firmele trebuie să-şi specializeze operaţiunile pentru a avea succes;" }, { letter: "b", text: "clienţii sunt dispuşi să plătească un preţ mai mare acelei firme care le va satisface cel mai bine nevoile;" }, { letter: "c", text: "consumatorii au un set de nevoi distinct şi relativ complex." }], correct: ["a", "b", "c"] },
+  { id: 352, text: "352) Subiecţii relaţiilor turistice pot fi consideraţi a fi:", answers: [{ letter: "a", text: "turiştii;" }, { letter: "b", text: "excursioniştii;" }, { letter: "c", text: "vizitatorii." }], correct: ["a", "b", "c"] },
+  { id: 353, text: "353) Simularea constă în:", answers: [{ letter: "a", text: "tehnică de realizare a experimentelor, care implică utilizarea unor modele matematice și logice și care descriu comportarea unui sistem real de-a lungul unei perioade mari de timp" }, { letter: "b", text: "construirea propriu-zisă a modelului economico-matematic;" }, { letter: "c", text: "implementarea modelului economico-matematic." }], correct: ["a"] },
+  { id: 354, text: "354) În funcție de sfera de reflectare a problematicii economice, modelele economico-matematice sunt:", answers: [{ letter: "a", text: "macroeconomice, mezoeconomice și microeconomice;" }, { letter: "b", text: "deterministe și stochastice;" }, { letter: "c", text: "statice și dinamice." }], correct: ["a"] },
+  { id: 355, text: "355) În funcție de caracterul variabilelor, modelele economico-matematice sunt:", answers: [{ letter: "a", text: "operative și orientative;" }, { letter: "b", text: "deterministe și stochastice;" }, { letter: "c", text: "statice și dinamice." }], correct: ["b"] },
+  { id: 356, text: "356) În funcție de factorul timp, modelele economico-matematice sunt:", answers: [{ letter: "a", text: "operative și orientative;" }, { letter: "b", text: "deterministe și stochastice;" }, { letter: "c", text: "statice și dinamice." }], correct: ["c"] },
+  { id: 357, text: "357) În funcție de structura proceselor reflectate, modelele economico-matematice sunt:", answers: [{ letter: "a", text: "cu profil tehnologic, informațional decizionale, informatice, ale relațiilor umane;" }, { letter: "b", text: "deterministe și stochastice;" }, { letter: "c", text: "statice și dinamice." }], correct: ["a"] },
+  { id: 358, text: "358) În funcție de gradul de cuprindere al realităţii economice, modelele economice se pot grupa în:", answers: [{ letter: "a", text: "cu profil tehnologic, informațional decizionale, informaționale, ale relațiilor umane;" }, { letter: "b", text: "deterministe și stochastice;" }, { letter: "c", text: "parțiale și generale" }], correct: ["c"] },
+  { id: 359, text: "359) Din punct de vedere timp și utilitate practică modelele economice se pot grupa în:", answers: [{ letter: "a", text: "cu profil tehnologic, informațional decizionale, informaționale, ale relațiilor umane;" }, { letter: "b", text: "modele operative și modele orientative ale creșterii economice" }, { letter: "c", text: "parțiale și generale" }], correct: ["b"] },
+  { id: 360, text: "360) Un sistem entropic este un sistem economic care:", answers: [{ letter: "a", text: "are proprietatea de a se autoregla;" }, { letter: "b", text: "se naște, crește, ajunge la maturitate și moare" }, { letter: "c", text: "are proprietatea de a se autoregla şi a se autodistruge." }], correct: ["b"] },
+  { id: 361, text: "361) Valoarea mediei se apreciază a fi distinct semnificativă dacă:", answers: [{ letter: "a", text: "dacă în jurul mediei în limitele de: ym +/- σ, în care ym = producția medie realizată pe perioada analizată, σ = abaterea standard a șirului, se găsesc cel puțin un număr de valori care au o pondere de 68,27 %." }, { letter: "b", text: "dacă în jurul mediei în limitele de: ym +/- σ, în care ym = producția medie realizată pe perioada analizată, σ = abaterea standard a șirului, se găsesc cel puțin un număr de valori care au o pondere de 64,5 %." }, { letter: "c", text: "dacă în jurul mediei în limitele de: ym +/- σ, în care ym = producția medie realizată pe perioada analizată, σ = abaterea standard a șirului, se găsesc cel puțin un număr de valori care au o pondere de 58,27%." }], correct: ["a"] },
+  { id: 362, text: "362) Modelul matematic de optimizare a dimensiunii unei unități are următoarele părți componente:", answers: [{ letter: "a", text: "funcție obiectiv, restricții, resurse, condiție de nenegativitate;" }, { letter: "b", text: "factori de producție;" }, { letter: "c", text: "resurse umane." }], correct: ["a"] },
+  { id: 363, text: "363) În soluția primală a modelului matematic este prezentată:", answers: [{ letter: "a", text: "structura activităților;" }, { letter: "b", text: "resursele consumate în totalitate;" }, { letter: "c", text: "cheltuielile totale." }], correct: ["a"] },
+  { id: 364, text: "364) Modelul de programare liniară presupune parcurgerea următoarelor etape:", answers: [{ letter: "a", text: "stabilirea modelului matematic, rezolvarea modelului şi interpretarea primal-duală a soluţiei obținute;" }, { letter: "b", text: "stabilirea consumului de factori de producție;" }, { letter: "c", text: "stabilirea necesarului de factori de producție." }], correct: ["a"] },
+  { id: 365, text: "365) Restricţiile modelului în condiţiile optimizării structurii activităților și a dimensiunii exploatației agricole pot fi de natură:", answers: [{ letter: "a", text: "tehnică, economică, de rotație a culturilor;" }, { letter: "b", text: "pedoclimatică;" }, { letter: "c", text: "juridică." }], correct: ["a"] },
+  { id: 366, text: "366) În urma rezolvării modelului matematic cu ajutorul programării liniare (metoda Simplex) rezultă în variabila primală (soluția primală) o valoare a funcției obiectiv de 11200 lei. Ce valoare are funcția obiectiv în variabila duală (soluția duală)?", answers: [{ letter: "a", text: "aceeași valoare;" }, { letter: "b", text: "mai mare cu 10 % decât valoarea din soluția primală;" }, { letter: "c", text: "mai mică cu 10% decât valoarea din soluția primală." }], correct: ["a"] },
+  { id: 367, text: "367) Modelarea economică permite:", answers: [{ letter: "a", text: "luarea unor decizii mai riguroase;" }, { letter: "b", text: "structurarea problemelor economice;" }, { letter: "c", text: "eliminarea completă a riscului." }], correct: ["a", "b"] },
+  { id: 368, text: "368) În procesul decizional sunt identificate:", answers: [{ letter: "a", text: "obiectivele decidentului;" }, { letter: "b", text: "variantele posibile;" }, { letter: "c", text: "consecințele fiecărei variante." }], correct: ["a", "b", "c"] },
+  { id: 369, text: "369) Printre avantajele modelelor economice se numără și:", answers: [{ letter: "a", text: "oferă o reprezentare intuitivă și totuși riguroasă a fenomenului analizat;" }, { letter: "b", text: "contribuie la verificarea corectitudinii procesului de gândire, care duce la luarea unor decizii mai riguroase științific;" }, { letter: "c", text: "ajută la structurarea mai bună a problemei investigate." }], correct: ["a", "b"] },
+  { id: 370, text: "370) Principalii indicatori ce caracterizează producția medie sunt:", answers: [{ letter: "a", text: "abaterea medie pătratică;" }, { letter: "b", text: "abaterea standard a șirului;" }, { letter: "c", text: "coeficientul de variație." }], correct: ["a", "b", "c"] },
+  { id: 371, text: "371) Funcția obiectiv a modelului matematic poate fi, în funcție de scopul propus:", answers: [{ letter: "a", text: "minimizare a costului de producție;" }, { letter: "b", text: "maximizare a profitului;" }, { letter: "c", text: "de stabilire a resurselor consumate." }], correct: ["a", "b"] },
+  { id: 372, text: "372) Utilizând metoda variantelor logice sau metoda constructivă se urmărește:", answers: [{ letter: "a", text: "stabilirea variantei care oferă cele mai bune oportunități fermei agroturistice;" }, { letter: "b", text: "stabilirea variantei din care rezultă cel mai mare profit;" }, { letter: "c", text: "stabilirea variantei cu cele mai mici cheltuieli." }], correct: ["a", "b"] },
+  { id: 373, text: "373) Procesul de modelare prin regresie presupune:", answers: [{ letter: "a", text: "determinarea ecuației de regresie;" }, { letter: "b", text: "simularea ecuației de regresie;" }, { letter: "c", text: "calcularea derivatei ecuației de regresie." }], correct: ["a", "b"] },
+  { id: 374, text: "374) În programarea liniară, o soluție admisibilă trebuie să respecte:", answers: [{ letter: "a", text: "toate restricțiile modelului;" }, { letter: "b", text: "condiția de nenegativitate a variabilelor;" }, { letter: "c", text: "existența unei funcții de regresie." }], correct: ["a", "b"] },
+  { id: 375, text: "375) Restricțiile dintr-un model de programare liniară pot fi:", answers: [{ letter: "a", text: "tehnice;" }, { letter: "b", text: "economice;" }, { letter: "c", text: "climatice." }], correct: ["a", "b"] }
+];
+
+// ============================================================
+// LOGICA QUIZ-ULUI (rămâne neschimbată)
+// ============================================================
+let currentQuestions = [];
+let userAnswers = {};
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  const shuffled = shuffle([...ALL_QUESTIONS]);
+  currentQuestions = shuffled.slice(0, 25);
+  userAnswers = {};
+  
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  document.getElementById('appHeader').style.display = 'flex';
+  document.getElementById('reviewSection').style.display = 'none';
+  
+  updateProgress();
+  renderQuestions();
+  window.scrollTo(0, 0);
+}
+
+function updateProgress() {
+  const answered = Object.keys(userAnswers).length;
+  const pct = (answered / 25) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = answered + ' / 25';
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+  
+  currentQuestions.forEach((q, idx) => {
+    const isMulti = q.correct.length > 1;
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'card-' + idx;
+    
+    let answersHTML = q.answers.map(a => `
+      <div class="answer-option" id="opt-${idx}-${a.letter}" onclick="toggleAnswer(${idx}, '${a.letter}')">
+        <div class="answer-check" id="chk-${idx}-${a.letter}">✓</div>
+        <div class="answer-letter">${a.letter})</div>
+        <div class="answer-text">${a.text}</div>
+      </div>
+    `).join('');
+    
+    card.innerHTML = `
+      <div class="question-header">
+        <div class="q-number">Q${idx + 1}</div>
+        <div class="q-text">${q.text}</div>
+      </div>
+      ${isMulti ? '<div class="multi-hint">⚠ Pot fi mai multe răspunsuri corecte</div>' : ''}
+      <div class="answers">${answersHTML}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function toggleAnswer(qIdx, letter) {
+  const q = currentQuestions[qIdx];
+  const isMulti = q.correct.length > 1;
+  
+  if (!userAnswers[qIdx]) userAnswers[qIdx] = [];
+  
+  const selected = userAnswers[qIdx];
+  const pos = selected.indexOf(letter);
+  
+  if (!isMulti) {
+    // Single answer - deselect others
+    selected.forEach(l => {
+      document.getElementById('opt-' + qIdx + '-' + l).classList.remove('selected');
+      document.getElementById('chk-' + qIdx + '-' + l).textContent = '✓';
+    });
+    userAnswers[qIdx] = [letter];
+    document.getElementById('opt-' + qIdx + '-' + letter).classList.add('selected');
+    document.getElementById('chk-' + qIdx + '-' + letter).textContent = '✓';
+  } else {
+    if (pos === -1) {
+      selected.push(letter);
+      document.getElementById('opt-' + qIdx + '-' + letter).classList.add('selected');
+    } else {
+      selected.splice(pos, 1);
+      document.getElementById('opt-' + qIdx + '-' + letter).classList.remove('selected');
+    }
+  }
+  
+  document.getElementById('card-' + qIdx).classList.toggle('answered', userAnswers[qIdx].length > 0);
+  updateProgress();
+}
+
+function submitQuiz() {
+  let correct = 0, partial = 0, wrong = 0;
+  
+  currentQuestions.forEach((q, idx) => {
+    const selected = userAnswers[idx] || [];
+    const correctSet = new Set(q.correct);
+    const selectedSet = new Set(selected);
+    
+    const allCorrectSelected = q.correct.every(c => selectedSet.has(c));
+    const noWrongSelected = selected.every(s => correctSet.has(s));
+    const isFullyCorrect = allCorrectSelected && noWrongSelected;
+    const isPartial = (selected.some(s => correctSet.has(s)) || q.correct.some(c => selectedSet.has(c))) && !isFullyCorrect;
+    
+    if (isFullyCorrect) correct++;
+    else if (selected.length > 0 && selected.some(s => correctSet.has(s)) && noWrongSelected && !allCorrectSelected) partial++;
+    else if (selected.length === 0 && q.correct.length > 0) wrong++;
+    else if (!isFullyCorrect) wrong++;
+    
+    q.answers.forEach(a => {
+      const el = document.getElementById('opt-' + idx + '-' + a.letter);
+      const chk = document.getElementById('chk-' + idx + '-' + a.letter);
+      el.classList.remove('selected');
+      el.style.cursor = 'default';
+      el.onclick = null;
+      
+      const wasSelected = selectedSet.has(a.letter);
+      const isCorrectAnswer = correctSet.has(a.letter);
+      
+      if (wasSelected && isCorrectAnswer) {
+        el.classList.add('correct');
+        chk.textContent = '✓';
+      } else if (wasSelected && !isCorrectAnswer) {
+        el.classList.add('wrong');
+        chk.textContent = '✗';
+      } else if (!wasSelected && isCorrectAnswer) {
+        el.classList.add('missed');
+        chk.textContent = '!';
+      }
+    });
+  });
+  
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'block';
+  
+  const score = correct;
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statPartial').textContent = partial;
+  document.getElementById('statWrong').textContent = wrong;
+  
+  const pct = Math.round((correct / 25) * 100);
+  const circle = document.getElementById('scoreCircle');
+  if (pct >= 70) {
+    circle.style.background = 'radial-gradient(circle, #1a3a1a, #0f1f0f)';
+    circle.style.border = '4px solid #48bb78';
+    circle.style.color = '#48bb78';
+    document.getElementById('resultsTitle').textContent = pct >= 90 ? '🏆 Excelent!' : '✅ Bine!';
+  } else if (pct >= 50) {
+    circle.style.background = 'radial-gradient(circle, #3a2a10, #1f1808)';
+    circle.style.border = '4px solid #f6ad55';
+    circle.style.color = '#f6ad55';
+    document.getElementById('resultsTitle').textContent = '⚡ Aproape!';
+  } else {
+    circle.style.background = 'radial-gradient(circle, #3a1a1a, #1f0808)';
+    circle.style.border = '4px solid #fc8181';
+    circle.style.color = '#fc8181';
+    document.getElementById('resultsTitle').textContent = '📚 Mai studiază!';
+  }
+  
+  window.scrollTo(0, 0);
+  buildReview();
+}
+
+function buildReview() {
+  const container = document.getElementById('reviewContainer');
+  container.innerHTML = '';
+  
+  currentQuestions.forEach((q, idx) => {
+    const selected = userAnswers[idx] || [];
+    const correctSet = new Set(q.correct);
+    const selectedSet = new Set(selected);
+    const allCorrect = q.correct.every(c => selectedSet.has(c)) && selected.every(s => correctSet.has(s));
+    const hasWrong = selected.some(s => !correctSet.has(s));
+    const hasMissed = q.correct.some(c => !selectedSet.has(c));
+    
+    let badge, badgeClass;
+    if (allCorrect) { badge = '✓ Corect'; badgeClass = 'badge-correct'; }
+    else if (selected.length > 0 && !hasWrong && hasMissed) { badge = '⚡ Parțial'; badgeClass = 'badge-partial'; }
+    else { badge = '✗ Greșit'; badgeClass = 'badge-wrong'; }
+    
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.style.marginBottom = '16px';
+    
+    let answersHTML = q.answers.map(a => {
+      const wasSelected = selectedSet.has(a.letter);
+      const isCorrect = correctSet.has(a.letter);
+      let cls = '';
+      let icon = '○';
+      if (wasSelected && isCorrect) { cls = 'correct'; icon = '✓'; }
+      else if (wasSelected && !isCorrect) { cls = 'wrong'; icon = '✗'; }
+      else if (!wasSelected && isCorrect) { cls = 'missed'; icon = '!'; }
+      
+      return `
+        <div class="answer-option ${cls}" style="cursor:default">
+          <div class="answer-check" style="${cls ? '' : 'border-color:#4a5568;color:#4a5568'}">${icon}</div>
+          <div class="answer-letter">${a.letter})</div>
+          <div class="answer-text">${a.text}</div>
+        </div>
+      `;
+    }).join('');
+    
+    card.innerHTML = `
+      <span class="result-badge ${badgeClass}">${badge}</span>
+      <div class="question-header">
+        <div class="q-number">Q${idx + 1}</div>
+        <div class="q-text">${q.text}</div>
+      </div>
+      <div class="answers">${answersHTML}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showReview() {
+  const rev = document.getElementById('reviewSection');
+  rev.style.display = rev.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
