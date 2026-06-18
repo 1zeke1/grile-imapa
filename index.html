@@ -10,7 +10,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-3310ZSYCJR');
 </script>
 <style>
@@ -102,6 +101,12 @@
   }
   .btn-secondary:hover {
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .btn-learning {
+    background: linear-gradient(135deg, #f6ad55, #ed8936) !important;
+  }
+  .btn-learning:hover {
+    box-shadow: 0 8px 25px rgba(237, 137, 54, 0.4) !important;
   }
   .question-card {
     background: #1a1d2e;
@@ -315,16 +320,26 @@
   .legend-dot {
     width: 12px; height: 12px; border-radius: 2px;
   }
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .btn-group .btn {
+    margin: 0;
+  }
 </style>
 </head>
 <body>
 
 <div class="header" id="appHeader" style="display:none">
-  <div class="header h1" style="font-size:1rem;font-weight:600;color:#90cdf4;">Quiz IMAPA 2026</div>
+  <h1 id="headerTitle" style="font-size:1rem;font-weight:600;color:#90cdf4;margin:0;">Quiz IMAPA 2026</h1>
   <div class="progress-bar-wrap">
     <div class="progress-bar" id="progressBar" style="width:0%"></div>
   </div>
-  <div class="progress-text" id="progressText">0 / 25</div>
+  <div class="progress-text" id="progressText">0 / 0</div>
 </div>
 
 <div class="container">
@@ -357,8 +372,11 @@
       <div class="stat-box"><div class="stat-val orange" id="statPartial">0</div><div class="stat-lbl">Parțial corecte</div></div>
       <div class="stat-box"><div class="stat-val red" id="statWrong">0</div><div class="stat-lbl">Greșite / Omise</div></div>
     </div>
-    <button class="btn" onclick="startQuiz()">🔄 Test nou (25 grile aleatorii)</button>
-    <button class="btn btn-secondary" onclick="showReview()">📋 Vezi corecturile</button>
+    <div class="btn-group">
+      <button class="btn" onclick="startQuiz()">🔄 Test nou</button>
+      <button class="btn btn-secondary" onclick="showReview()">📋 Vezi corecturile</button>
+      <button class="btn btn-learning" onclick="startLearningMode()" id="learnBtn" style="display:none;">📚 Învață din greșeli</button>
+    </div>
     <div class="review-section" id="reviewSection" style="display:none">
       <h3>Corectarea detaliată</h3>
       <div class="legend">
@@ -374,7 +392,7 @@
 
 <script>
 // ============================================================
-// TOATE ÎNTREBĂRILE – corectate complet din documentul Word
+// ⬇️⬇️⬇️ AICI ADĂUGI CELE 375 DE ÎNTREBĂRI ⬇️⬇️⬇️
 // ============================================================
 const ALL_QUESTIONS = [
   { id: 1, text: "1) Care afirmație este adevărată despre BRAINSTORMING?", answers: [{ letter: "a", text: "este o tehnică generală de management;" }, { letter: "b", text: "poate participa oricine din firmă la un Brainstorming, chiar dacă nu este invitat;" }, { letter: "c", text: "tehnica este concepută astfel încât gândirea critică și negativă, obișnuită în setările de grup, să fie suspendată temporar, astfel încât ideile să poată fi exprimate liber." }], correct: ["c"] },
@@ -755,10 +773,21 @@ const ALL_QUESTIONS = [
 ];
 
 // ============================================================
-// LOGICA QUIZ-ULUI (rămâne neschimbată)
+// ⬆️⬆️⬆️ AICI SE TERMINĂ SECȚIUNEA CU ÎNTREBĂRI ⬆️⬆️⬆️
+// ============================================================
+
+// ============================================================
+// LOGICA QUIZ-ULUI
 // ============================================================
 let currentQuestions = [];
 let userAnswers = {};
+let savedWrongQuestions = [];
+let learningMode = false;
+let TOTAL_QUESTIONS = 25;
+
+function getTotalQuestions() {
+  return Math.min(25, ALL_QUESTIONS.length);
+}
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -769,15 +798,31 @@ function shuffle(arr) {
 }
 
 function startQuiz() {
-  const shuffled = shuffle([...ALL_QUESTIONS]);
-  currentQuestions = shuffled.slice(0, 25);
-  userAnswers = {};
+  if (!ALL_QUESTIONS || ALL_QUESTIONS.length === 0) {
+    alert('⚠️ Nu există întrebări încărcate! Adaugă-le în array-ul ALL_QUESTIONS.');
+    return;
+  }
   
-  document.getElementById('startScreen').style.display = 'none';
-  document.getElementById('resultsScreen').style.display = 'none';
-  document.getElementById('quizScreen').style.display = 'block';
-  document.getElementById('appHeader').style.display = 'flex';
-  document.getElementById('reviewSection').style.display = 'none';
+  TOTAL_QUESTIONS = getTotalQuestions();
+  const shuffled = shuffle([...ALL_QUESTIONS]);
+  const count = Math.min(TOTAL_QUESTIONS, shuffled.length);
+  currentQuestions = shuffled.slice(0, count);
+  userAnswers = {};
+  learningMode = false;
+  
+  const startScreen = document.getElementById('startScreen');
+  const resultsScreen = document.getElementById('resultsScreen');
+  const quizScreen = document.getElementById('quizScreen');
+  const appHeader = document.getElementById('appHeader');
+  const reviewSection = document.getElementById('reviewSection');
+  const headerTitle = document.getElementById('headerTitle');
+  
+  if (startScreen) startScreen.style.display = 'none';
+  if (resultsScreen) resultsScreen.style.display = 'none';
+  if (quizScreen) quizScreen.style.display = 'block';
+  if (appHeader) appHeader.style.display = 'flex';
+  if (reviewSection) reviewSection.style.display = 'none';
+  if (headerTitle) headerTitle.textContent = 'Quiz IMAPA 2026';
   
   updateProgress();
   renderQuestions();
@@ -786,17 +831,21 @@ function startQuiz() {
 
 function updateProgress() {
   const answered = Object.keys(userAnswers).length;
-  const pct = (answered / 25) * 100;
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('progressText').textContent = answered + ' / 25';
+  const total = currentQuestions.length || 1;
+  const pct = (answered / total) * 100;
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  if (progressBar) progressBar.style.width = pct + '%';
+  if (progressText) progressText.textContent = answered + ' / ' + total;
 }
 
 function renderQuestions() {
   const container = document.getElementById('questionsContainer');
+  if (!container) return;
   container.innerHTML = '';
   
   currentQuestions.forEach((q, idx) => {
-    const isMulti = q.correct.length > 1;
+    const isMulti = q.correct && q.correct.length > 1;
     const card = document.createElement('div');
     card.className = 'question-card';
     card.id = 'card-' + idx;
@@ -823,38 +872,45 @@ function renderQuestions() {
 
 function toggleAnswer(qIdx, letter) {
   const q = currentQuestions[qIdx];
-  const isMulti = q.correct.length > 1;
+  if (!q) return;
+  const isMulti = q.correct && q.correct.length > 1;
   
   if (!userAnswers[qIdx]) userAnswers[qIdx] = [];
-  
   const selected = userAnswers[qIdx];
   const pos = selected.indexOf(letter);
   
   if (!isMulti) {
-    // Single answer - deselect others
     selected.forEach(l => {
-      document.getElementById('opt-' + qIdx + '-' + l).classList.remove('selected');
-      document.getElementById('chk-' + qIdx + '-' + l).textContent = '✓';
+      const opt = document.getElementById('opt-' + qIdx + '-' + l);
+      const chk = document.getElementById('chk-' + qIdx + '-' + l);
+      if (opt) opt.classList.remove('selected');
+      if (chk) chk.textContent = '✓';
     });
     userAnswers[qIdx] = [letter];
-    document.getElementById('opt-' + qIdx + '-' + letter).classList.add('selected');
-    document.getElementById('chk-' + qIdx + '-' + letter).textContent = '✓';
+    const opt = document.getElementById('opt-' + qIdx + '-' + letter);
+    const chk = document.getElementById('chk-' + qIdx + '-' + letter);
+    if (opt) opt.classList.add('selected');
+    if (chk) chk.textContent = '✓';
   } else {
     if (pos === -1) {
       selected.push(letter);
-      document.getElementById('opt-' + qIdx + '-' + letter).classList.add('selected');
+      const opt = document.getElementById('opt-' + qIdx + '-' + letter);
+      if (opt) opt.classList.add('selected');
     } else {
       selected.splice(pos, 1);
-      document.getElementById('opt-' + qIdx + '-' + letter).classList.remove('selected');
+      const opt = document.getElementById('opt-' + qIdx + '-' + letter);
+      if (opt) opt.classList.remove('selected');
     }
   }
   
-  document.getElementById('card-' + qIdx).classList.toggle('answered', userAnswers[qIdx].length > 0);
+  const card = document.getElementById('card-' + qIdx);
+  if (card) card.classList.toggle('answered', userAnswers[qIdx].length > 0);
   updateProgress();
 }
 
 function submitQuiz() {
   let correct = 0, partial = 0, wrong = 0;
+  let currentWrongQuestions = [];
   
   currentQuestions.forEach((q, idx) => {
     const selected = userAnswers[idx] || [];
@@ -866,68 +922,140 @@ function submitQuiz() {
     const isFullyCorrect = allCorrectSelected && noWrongSelected;
     const isPartial = (selected.some(s => correctSet.has(s)) || q.correct.some(c => selectedSet.has(c))) && !isFullyCorrect;
     
-    if (isFullyCorrect) correct++;
-    else if (selected.length > 0 && selected.some(s => correctSet.has(s)) && noWrongSelected && !allCorrectSelected) partial++;
-    else if (selected.length === 0 && q.correct.length > 0) wrong++;
-    else if (!isFullyCorrect) wrong++;
+    if (isFullyCorrect) {
+      correct++;
+    } else {
+      wrong++;
+      currentWrongQuestions.push(q);
+    }
     
     q.answers.forEach(a => {
       const el = document.getElementById('opt-' + idx + '-' + a.letter);
       const chk = document.getElementById('chk-' + idx + '-' + a.letter);
-      el.classList.remove('selected');
-      el.style.cursor = 'default';
-      el.onclick = null;
-      
-      const wasSelected = selectedSet.has(a.letter);
-      const isCorrectAnswer = correctSet.has(a.letter);
-      
-      if (wasSelected && isCorrectAnswer) {
-        el.classList.add('correct');
-        chk.textContent = '✓';
-      } else if (wasSelected && !isCorrectAnswer) {
-        el.classList.add('wrong');
-        chk.textContent = '✗';
-      } else if (!wasSelected && isCorrectAnswer) {
-        el.classList.add('missed');
-        chk.textContent = '!';
+      if (el) {
+        el.classList.remove('selected');
+        el.style.cursor = 'default';
+        el.onclick = null;
+        
+        const wasSelected = selectedSet.has(a.letter);
+        const isCorrectAnswer = correctSet.has(a.letter);
+        
+        if (wasSelected && isCorrectAnswer) {
+          el.classList.add('correct');
+          if (chk) chk.textContent = '✓';
+        } else if (wasSelected && !isCorrectAnswer) {
+          el.classList.add('wrong');
+          if (chk) chk.textContent = '✗';
+        } else if (!wasSelected && isCorrectAnswer) {
+          el.classList.add('missed');
+          if (chk) chk.textContent = '!';
+        }
       }
     });
   });
   
-  document.getElementById('quizScreen').style.display = 'none';
-  document.getElementById('resultsScreen').style.display = 'block';
-  
-  const score = correct;
-  document.getElementById('scoreNum').textContent = score;
-  document.getElementById('statCorrect').textContent = correct;
-  document.getElementById('statPartial').textContent = partial;
-  document.getElementById('statWrong').textContent = wrong;
-  
-  const pct = Math.round((correct / 25) * 100);
-  const circle = document.getElementById('scoreCircle');
-  if (pct >= 70) {
-    circle.style.background = 'radial-gradient(circle, #1a3a1a, #0f1f0f)';
-    circle.style.border = '4px solid #48bb78';
-    circle.style.color = '#48bb78';
-    document.getElementById('resultsTitle').textContent = pct >= 90 ? '🏆 Excelent!' : '✅ Bine!';
-  } else if (pct >= 50) {
-    circle.style.background = 'radial-gradient(circle, #3a2a10, #1f1808)';
-    circle.style.border = '4px solid #f6ad55';
-    circle.style.color = '#f6ad55';
-    document.getElementById('resultsTitle').textContent = '⚡ Aproape!';
+  // Salvăm întrebările greșite
+  if (!learningMode) {
+    savedWrongQuestions = currentWrongQuestions;
   } else {
-    circle.style.background = 'radial-gradient(circle, #3a1a1a, #1f0808)';
-    circle.style.border = '4px solid #fc8181';
-    circle.style.color = '#fc8181';
-    document.getElementById('resultsTitle').textContent = '📚 Mai studiază!';
+    savedWrongQuestions = currentWrongQuestions;
+  }
+  
+  const quizScreen = document.getElementById('quizScreen');
+  const resultsScreen = document.getElementById('resultsScreen');
+  if (quizScreen) quizScreen.style.display = 'none';
+  if (resultsScreen) resultsScreen.style.display = 'block';
+  
+  const total = currentQuestions.length;
+  const scoreNum = document.getElementById('scoreNum');
+  const statCorrect = document.getElementById('statCorrect');
+  const statPartial = document.getElementById('statPartial');
+  const statWrong = document.getElementById('statWrong');
+  if (scoreNum) scoreNum.textContent = correct;
+  if (statCorrect) statCorrect.textContent = correct;
+  if (statPartial) statPartial.textContent = partial;
+  if (statWrong) statWrong.textContent = wrong;
+  
+  const pct = Math.round((correct / total) * 100);
+  const circle = document.getElementById('scoreCircle');
+  const resultsTitle = document.getElementById('resultsTitle');
+  if (circle) {
+    if (pct >= 70) {
+      circle.style.background = 'radial-gradient(circle, #1a3a1a, #0f1f0f)';
+      circle.style.border = '4px solid #48bb78';
+      circle.style.color = '#48bb78';
+      if (resultsTitle) resultsTitle.textContent = pct >= 90 ? '🏆 Excelent!' : '✅ Bine!';
+    } else if (pct >= 50) {
+      circle.style.background = 'radial-gradient(circle, #3a2a10, #1f1808)';
+      circle.style.border = '4px solid #f6ad55';
+      circle.style.color = '#f6ad55';
+      if (resultsTitle) resultsTitle.textContent = '⚡ Aproape!';
+    } else {
+      circle.style.background = 'radial-gradient(circle, #3a1a1a, #1f0808)';
+      circle.style.border = '4px solid #fc8181';
+      circle.style.color = '#fc8181';
+      if (resultsTitle) resultsTitle.textContent = '📚 Mai studiază!';
+    }
+  }
+  
+  // Resetează titlul dacă a fost modul de învățare
+  if (learningMode) {
+    learningMode = false;
+    const headerTitle = document.getElementById('headerTitle');
+    if (headerTitle) headerTitle.textContent = 'Quiz IMAPA 2026';
+  }
+  
+  // Afișează butonul de învățare dacă sunt întrebări greșite
+  const learnBtn = document.getElementById('learnBtn');
+  if (savedWrongQuestions.length > 0) {
+    if (learnBtn) {
+      learnBtn.style.display = 'inline-block';
+      learnBtn.textContent = `📚 Învață din greșeli (${savedWrongQuestions.length} întrebări)`;
+    }
+  } else {
+    if (learnBtn) learnBtn.style.display = 'none';
   }
   
   window.scrollTo(0, 0);
   buildReview();
 }
 
+// ============================================================
+// MODUL DE ÎNVĂȚARE - doar întrebările greșite
+// ============================================================
+function startLearningMode() {
+  if (savedWrongQuestions.length === 0) {
+    alert('🎉 Nu ai întrebări greșite! Continuă așa!');
+    return;
+  }
+  
+  learningMode = true;
+  TOTAL_QUESTIONS = getTotalQuestions();
+  const shuffled = shuffle([...savedWrongQuestions]);
+  const count = Math.min(TOTAL_QUESTIONS, shuffled.length);
+  currentQuestions = shuffled.slice(0, count);
+  userAnswers = {};
+  
+  const resultsScreen = document.getElementById('resultsScreen');
+  const quizScreen = document.getElementById('quizScreen');
+  const appHeader = document.getElementById('appHeader');
+  const reviewSection = document.getElementById('reviewSection');
+  const headerTitle = document.getElementById('headerTitle');
+  
+  if (resultsScreen) resultsScreen.style.display = 'none';
+  if (quizScreen) quizScreen.style.display = 'block';
+  if (appHeader) appHeader.style.display = 'flex';
+  if (reviewSection) reviewSection.style.display = 'none';
+  if (headerTitle) headerTitle.textContent = '📚 Mod Învățare';
+  
+  updateProgress();
+  renderQuestions();
+  window.scrollTo(0, 0);
+}
+
 function buildReview() {
   const container = document.getElementById('reviewContainer');
+  if (!container) return;
   container.innerHTML = '';
   
   currentQuestions.forEach((q, idx) => {
@@ -979,8 +1107,13 @@ function buildReview() {
 
 function showReview() {
   const rev = document.getElementById('reviewSection');
-  rev.style.display = rev.style.display === 'none' ? 'block' : 'none';
+  if (rev) rev.style.display = rev.style.display === 'none' ? 'block' : 'none';
 }
+
+// Asigură că toate funcțiile sunt disponibile după încărcarea DOM-ului
+document.addEventListener('DOMContentLoaded', function() {
+  updateProgress();
+});
 </script>
 </body>
 </html>
