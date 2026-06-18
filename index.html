@@ -954,10 +954,14 @@ function submitQuiz() {
     });
   });
   if (typeof gtag !== 'undefined') {
+    // Trimite evenimentul cu mai multe detalii
     gtag('event', 'quiz_completed', {
       'score': correct,
       'total_questions': currentQuestions.length,
-      'percentage': Math.round((correct / currentQuestions.length) * 100)
+      'percentage': Math.round((correct / currentQuestions.length) * 100),
+      'wrong_count': currentWrongQuestions.length,
+      'wrong_ids': currentWrongQuestions.map(q => q.id).join(','),
+      'timestamp': new Date().toISOString()
     });
   }
   // Salvăm întrebările greșite
