@@ -953,7 +953,13 @@ function submitQuiz() {
       }
     });
   });
-  
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'quiz_completed', {
+      'score': correct,
+      'total_questions': currentQuestions.length,
+      'percentage': Math.round((correct / currentQuestions.length) * 100)
+    });
+  }
   // Salvăm întrebările greșite
   if (!learningMode) {
     savedWrongQuestions = currentWrongQuestions;
